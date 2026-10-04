@@ -1,4 +1,9 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:fl_clash/common/print.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/lightboat/api/commerce.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/config.dart';
@@ -24,11 +29,38 @@ abstract final class LbErrorCode {
   static bool isAuthExpired(int code) => code >= 40002 && code <= 40005;
 }
 
+/// Why a request never got an answer; tells a clock or certificate problem
+/// apart from a network that is simply down.
+enum LbNetworkIssue { timeout, hostLookup, certificate, connection }
+
+LbNetworkIssue lbNetworkIssue(DioException error) {
+  switch (error.type) {
+    case DioExceptionType.connectionTimeout ||
+        DioExceptionType.sendTimeout ||
+        DioExceptionType.receiveTimeout:
+      return LbNetworkIssue.timeout;
+    case DioExceptionType.badCertificate:
+      return LbNetworkIssue.certificate;
+    default:
+      return switch (error.error) {
+        TlsException() => LbNetworkIssue.certificate,
+        TimeoutException() => LbNetworkIssue.timeout,
+        SocketException(:final message)
+            when message.startsWith('Failed host lookup') =>
+          LbNetworkIssue.hostLookup,
+        _ => LbNetworkIssue.connection,
+      };
+  }
+}
+
 class PanelException implements Exception {
   final int code;
   final String message;
 
-  const PanelException(this.code, this.message);
+  /// Set when [code] is [LbErrorCode.network].
+  final LbNetworkIssue? issue;
+
+  const PanelException(this.code, this.message, {this.issue});
 
   bool get isAuthExpired => LbErrorCode.isAuthExpired(code);
 
@@ -126,7 +158,16 @@ class PanelApi {
       );
     } on DioException catch (error) {
       _panelUrl = null;
-      throw PanelException(LbErrorCode.network, error.message ?? '$error');
+      final issue = lbNetworkIssue(error);
+      commonPrint.log(
+        'lightboat $method $path: ${issue.name} ${error.error ?? error.message}',
+        logLevel: LogLevel.warning,
+      );
+      throw PanelException(
+        LbErrorCode.network,
+        error.message ?? '$error',
+        issue: issue,
+      );
     }
     return parseEnvelope(response.statusCode, response.data);
   }

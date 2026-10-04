@@ -543,6 +543,28 @@ class _TrafficLine extends ConsumerWidget {
 class _ModeCard extends ConsumerWidget {
   const _ModeCard();
 
+  /// The profile pins GLOBAL to the line group on its next refresh; a profile
+  /// loaded before that pin existed is corrected here, when it starts to matter.
+  void _changeMode(WidgetRef ref, Mode mode) {
+    ref
+        .read(patchClashConfigProvider.notifier)
+        .update((state) => state.copyWith(mode: mode));
+    if (mode != Mode.global) return;
+    final global = ref
+        .read(groupsProvider)
+        .firstWhereOrNull((group) => group.name == LbConfig.globalGroup);
+    if (global != null && global.now != LbConfig.proxyGroup) {
+      unawaited(
+        ref
+            .read(proxiesActionProvider.notifier)
+            .changeProxy(
+              groupName: LbConfig.globalGroup,
+              proxyName: LbConfig.proxyGroup,
+            ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = LbColors.of(context);
@@ -564,9 +586,7 @@ class _ModeCard extends ConsumerWidget {
               ),
             ],
             selected: {global ? Mode.global : Mode.rule},
-            onSelectionChanged: (value) => ref
-                .read(patchClashConfigProvider.notifier)
-                .update((state) => state.copyWith(mode: value.first)),
+            onSelectionChanged: (value) => _changeMode(ref, value.first),
           ),
           const SizedBox(height: 10),
           Text(
@@ -584,6 +604,25 @@ class _ModeCard extends ConsumerWidget {
 Group? lbLineGroup(List<Group> groups) =>
     groups.firstWhereOrNull((group) => group.name == LbConfig.proxyGroup) ??
     groups.firstWhereOrNull((group) => group.type == GroupType.Selector);
+
+/// The lines worth offering: everything in [line] except choices that end in
+/// a direct connection, since 线路 never means "no proxy" (01: no 直连 mode).
+List<Proxy> lbLineChoices(Group line, List<Group> groups) {
+  bool direct(Proxy proxy, Set<String> seen) {
+    if (_directTypes.contains(proxy.type)) return true;
+    final group = groups.firstWhereOrNull((item) => item.name == proxy.name);
+    if (group == null || !seen.add(group.name)) return false;
+    return group.all.isNotEmpty &&
+        group.all.every((member) => direct(member, seen));
+  }
+
+  return [
+    for (final proxy in line.all)
+      if (!direct(proxy, {})) proxy,
+  ];
+}
+
+const _directTypes = {'Direct', 'Reject', 'RejectDrop', 'Pass', 'Compatible'};
 
 String lbLineName(String? name) =>
     name == null || name == LbConfig.autoProxy ? LbStrings.autoLine : name;

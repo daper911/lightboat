@@ -15,7 +15,10 @@ abstract final class LbConfig {
   static const proxyGroup = '🚀 Proxy';
   static const autoProxy = '🌏 Auto';
 
-  static const sourceUrl = 'https://github.com/daper911/lightboat-android';
+  /// mihomo's own group for global mode; it starts on DIRECT.
+  static const globalGroup = 'GLOBAL';
+
+  static const sourceUrl = 'https://github.com/daper911/lightboat';
   static const supportEmail = 'support@mail.cnbetx.com';
 
   static String siteLink(String route) => '${panelUrls.first}/#/$route';

@@ -44,8 +44,25 @@ const _groups = [
     now: '🌏 Auto',
     all: [
       Proxy(name: '🌏 Auto', type: 'URLTest'),
+      Proxy(name: '🎯 Direct', type: 'Selector'),
       Proxy(name: '香港 HK1 · Reality', type: 'Vless'),
       Proxy(name: '香港 HK1 · Hysteria2', type: 'Hysteria2'),
+    ],
+  ),
+  Group(
+    type: GroupType.Selector,
+    name: '🎯 Direct',
+    now: 'DIRECT',
+    hidden: true,
+    all: [Proxy(name: 'DIRECT', type: 'Direct')],
+  ),
+  Group(
+    type: GroupType.Selector,
+    name: 'GLOBAL',
+    now: 'DIRECT',
+    all: [
+      Proxy(name: 'DIRECT', type: 'Direct'),
+      Proxy(name: '🚀 Proxy', type: 'Selector'),
     ],
   ),
   Group(
@@ -134,6 +151,7 @@ void main() {
     await tester.pump();
     expect(container.read(patchClashConfigProvider).mode, Mode.global);
     expect(find.text(LbStrings.modeGlobalHint), findsOneWidget);
+    expect(RecordingProxies.calls, ['change GLOBAL -> 🚀 Proxy']);
 
     await tester.tap(find.text(LbStrings.modeSmart));
     await tester.pump();
@@ -246,6 +264,7 @@ void main() {
     await tester.tap(find.text(LbStrings.line));
     await tester.pumpAndSettle();
     expect(find.text('香港 HK1 · Hysteria2'), findsOneWidget);
+    expect(find.text('🎯 Direct'), findsNothing);
 
     await tester.tap(find.text('香港 HK1 · Hysteria2'));
     await tester.pump();

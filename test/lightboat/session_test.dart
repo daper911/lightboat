@@ -1,6 +1,7 @@
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
 import 'package:fl_clash/lightboat/auth/credential_store.dart';
+import 'package:fl_clash/lightboat/config.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +24,30 @@ const _plan = LbSubscription(
 );
 
 void main() {
+  group('lbSelectedMap', () {
+    test('a new profile starts on Auto with GLOBAL following the line', () {
+      expect(lbSelectedMap(const {}), {
+        LbConfig.proxyGroup: LbConfig.autoProxy,
+        LbConfig.globalGroup: LbConfig.proxyGroup,
+      });
+    });
+
+    test('keeps the picked line and repairs GLOBAL', () {
+      expect(
+        lbSelectedMap(const {
+          LbConfig.proxyGroup: '香港 HK1 · Hysteria2',
+          LbConfig.globalGroup: 'DIRECT',
+          '🔍 Google': '🚀 Proxy',
+        }),
+        {
+          LbConfig.proxyGroup: '香港 HK1 · Hysteria2',
+          LbConfig.globalGroup: LbConfig.proxyGroup,
+          '🔍 Google': '🚀 Proxy',
+        },
+      );
+    });
+  });
+
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('LbSession', () {

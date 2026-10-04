@@ -164,7 +164,9 @@ User-Agent: Lightboat-Android/0.1.0 (Clash.Meta)
   - `香港 HK1 · Reality`：`type: vless`，`flow: xtls-rprx-vision`，`tls: true`，带 `reality-opts`（public-key、short-id）和 `client-fingerprint`；
   - `香港 HK1 · Hysteria2`：`type: hysteria2`，自签证书，靠 `fingerprint`（证书指纹）校验。
 - 分组：`🚀 Proxy`（select，**第一个选项就是 `🌏 Auto`**），`🌏 Auto`（url-test，自动测速选最快），以及 `🍎 Apple`、`🔍 Google`、`📺 GlobalMedia`、`🤖 AI`、`🇨🇳 China` 等按应用分流的分组。
-  - **首页的「线路」= `🚀 Proxy` 分组**：默认选 `🌏 Auto`；用户手动选节点，就是把 `🚀 Proxy` 切到具体节点。
+  - **首页的「线路」= `🚀 Proxy` 分组**：默认选 `🌏 Auto`；用户手动选节点，就是把 `🚀 Proxy` 切到具体节点。按应用分流的分组（`🔍 Google`、`📟 Telegram`、`🐠 Final` 等）第一个选项都是 `🚀 Proxy`，所以默认跟着线路走（2026-10-05 核对主项目 `deploy/templates/clash.gotmpl`）。
+  - 线路列表**不显示**最终走直连的选项（`🎯 Direct`，以及类型为 Direct / Reject 的项），见 `lbLineChoices`。
+  - **全局模式**：订阅里没有 `GLOBAL` 分组，mihomo 会自动生成一个，第一个选项是 `DIRECT`（`config/config.go`）。App 在配置的已选记录里把 `GLOBAL` 固定为 `🚀 Proxy`（`lbSelectedMap`），切到全局时若内核里还不是，就立即改过来。0.3.0 及以前没有这一步，「全局」实际是全部直连（2026-10-05 运营方在国内的 Windows 上遇到：测速正常、浏览器和 Telegram 打不开）。
 - 规则集（`rule-providers`）从 **`cdn.jsdmirror.com`**（国内可访问的 jsDelivr 镜像）下载，共 20 个。这是外部依赖：镜像挂了，规则就加载不了。**建议 App 内置一份规则集作为兜底**，或者以后由面板托管规则集。
 - 配置里的 `tun`、`dns`、`mixed-port`、`external-controller` 等设置，FlClash 会按自己的 VPN 实现覆盖掉，沿用 FlClash 的处理即可。
 

@@ -1,10 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:fl_clash/lightboat/api/commerce.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
+import 'package:fl_clash/lightboat/strings.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 typedef _Reply = (int, Object?);
@@ -148,6 +150,46 @@ void main() {
           LbErrorCode.network,
         ),
       ),
+    );
+  });
+
+  test('tells the network failures apart', () {
+    final options = RequestOptions(path: '/');
+    LbNetworkIssue issueOf(DioExceptionType type, [Object? cause]) =>
+        lbNetworkIssue(
+          DioException(requestOptions: options, type: type, error: cause),
+        );
+    expect(issueOf(DioExceptionType.connectionTimeout), LbNetworkIssue.timeout);
+    expect(
+      issueOf(
+        DioExceptionType.unknown,
+        const HandshakeException('CERTIFICATE_VERIFY_FAILED'),
+      ),
+      LbNetworkIssue.certificate,
+    );
+    expect(
+      issueOf(
+        DioExceptionType.connectionError,
+        const SocketException('Failed host lookup: ssr.cnbetx.com'),
+      ),
+      LbNetworkIssue.hostLookup,
+    );
+    expect(
+      issueOf(
+        DioExceptionType.connectionError,
+        const SocketException('Connection refused'),
+      ),
+      LbNetworkIssue.connection,
+    );
+    expect(
+      LbStrings.loginError(
+        const PanelException(
+          LbErrorCode.network,
+          'x',
+          issue: LbNetworkIssue.certificate,
+        ),
+      ),
+      contains('证书'),
     );
   });
 

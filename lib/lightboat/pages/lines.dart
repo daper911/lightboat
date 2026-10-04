@@ -22,7 +22,11 @@ class _LbLinesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = LbColors.of(context);
-    final group = lbLineGroup(ref.watch(groupsProvider));
+    final groups = ref.watch(groupsProvider);
+    final group = lbLineGroup(groups);
+    final choices = group == null
+        ? const <Proxy>[]
+        : lbLineChoices(group, groups);
     return Scaffold(
       backgroundColor: colors.paper,
       appBar: AppBar(
@@ -35,7 +39,7 @@ class _LbLinesPage extends ConsumerWidget {
               onPressed: () => unawaited(
                 ref
                     .read(proxiesActionProvider.notifier)
-                    .delayTest(group.all, group.testUrl),
+                    .delayTest(choices, group.testUrl),
               ),
               child: const Text(LbStrings.testDelay),
             ),
@@ -53,10 +57,10 @@ class _LbLinesPage extends ConsumerWidget {
             )
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-              itemCount: group.all.length,
+              itemCount: choices.length,
               separatorBuilder: (_, _) => const SizedBox(height: 8),
               itemBuilder: (_, index) =>
-                  _LineTile(group: group, proxy: group.all[index]),
+                  _LineTile(group: group, proxy: choices[index]),
             ),
     );
   }

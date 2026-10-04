@@ -15,6 +15,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum LbPhase { loading, signedOut, signedIn }
 
+/// The group selections Lightboat keeps in its profile. 全局 sends everything
+/// through mihomo's GLOBAL group, which starts on DIRECT, so it is pinned to the
+/// line group and follows whatever line the user picked.
+Map<String, String> lbSelectedMap(Map<String, String> current) => {
+  LbConfig.proxyGroup: LbConfig.autoProxy,
+  ...current,
+  LbConfig.globalGroup: LbConfig.proxyGroup,
+};
+
 class LbSessionState {
   final LbPhase phase;
   final String? email;
@@ -264,12 +273,17 @@ class LbSession extends Notifier<LbSessionState> {
       profile = await Profile.normal(label: LbConfig.profileLabel, url: url)
           .copyWith(
             autoUpdateDuration: const Duration(hours: 6),
-            selectedMap: const {LbConfig.proxyGroup: LbConfig.autoProxy},
+            selectedMap: lbSelectedMap(const {}),
           )
           .update(validate: (path) => _core.validateConfig(path));
       profilesAction.putProfile(profile);
     } else {
-      await profilesAction.updateProfile(existing.copyWith(url: url));
+      await profilesAction.updateProfile(
+        existing.copyWith(
+          url: url,
+          selectedMap: lbSelectedMap(existing.selectedMap),
+        ),
+      );
       profile = _ownProfile() ?? existing;
     }
     if (ref.read(currentProfileIdProvider) != profile.id) {

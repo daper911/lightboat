@@ -156,6 +156,13 @@ abstract final class LbStrings {
   static String splitSelected(int count) => '已选 $count 个应用';
   static const splitShowSystem = '显示系统应用';
 
+  static String networkError(LbNetworkIssue? issue) => switch (issue) {
+    LbNetworkIssue.timeout => '连接服务器超时，请检查网络后重试',
+    LbNetworkIssue.hostLookup => '找不到服务器地址，请检查网络或 DNS 设置',
+    LbNetworkIssue.certificate => '服务器证书校验失败，请检查设备的日期和时间是否正确',
+    _ => '网络连接失败，请检查网络后重试',
+  };
+
   static String panelError(Object error, {String action = '操作'}) {
     if (error is! PanelException) return '$action失败，请稍后再试';
     if (error.isAuthExpired) return '登录已过期，请重新登录';
@@ -169,7 +176,7 @@ abstract final class LbStrings {
       LbErrorCode.planUnavailable => '这个套餐暂时不能购买',
       LbErrorCode.planOutOfStock => '这个套餐已售罄',
       LbErrorCode.rateLimited => '操作太频繁，请稍后再试',
-      LbErrorCode.network => '网络连接失败，请检查网络后重试',
+      LbErrorCode.network => networkError(error.issue),
       LbErrorCode.captchaFailed => '安全验证没有通过，请重试',
       _ => '$action失败（${error.code}），请稍后再试',
     };
@@ -182,7 +189,7 @@ abstract final class LbStrings {
       LbErrorCode.userNotFound => '账号不存在',
       LbErrorCode.userDisabled => '账号已被停用，请联系客服',
       LbErrorCode.rateLimited => '操作太频繁，请稍后再试',
-      LbErrorCode.network => '网络连接失败，请检查网络后重试',
+      LbErrorCode.network => networkError(error.issue),
       400 => '请求有误',
       _ => '登录失败（${error.code}），请稍后再试',
     };
