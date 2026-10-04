@@ -19,6 +19,10 @@ abstract final class LbConfig {
   static const globalGroup = 'GLOBAL';
 
   static const sourceUrl = 'https://github.com/daper911/lightboat';
+
+  /// Where `latest.json` and the installers live (R2 behind cdn.cnbetx.com).
+  static const releaseUrl = 'https://cdn.cnbetx.com/lightboat/latest.json';
+
   static const supportEmail = 'support@mail.cnbetx.com';
 
   static String siteLink(String route) => '${panelUrls.first}/#/$route';

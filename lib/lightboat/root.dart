@@ -8,6 +8,7 @@ import 'package:fl_clash/lightboat/pages/logo.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/theme.dart';
 import 'package:fl_clash/lightboat/trust.dart';
+import 'package:fl_clash/lightboat/update.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,11 +60,21 @@ class LbRoot extends ConsumerStatefulWidget {
 class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
   static const _refreshAfter = Duration(hours: 1);
   DateTime _lastRefresh = DateTime.now();
+  bool _promptsShown = false;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+  }
+
+  /// Startup prompts wait for the home page so they never cover the login.
+  void _showStartupPrompts() {
+    if (_promptsShown) return;
+    _promptsShown = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(lbCheckForUpdate(context));
+    });
   }
 
   @override
@@ -84,6 +95,7 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final phase = ref.watch(lbSessionProvider.select((state) => state.phase));
+    if (phase == LbPhase.signedIn) _showStartupPrompts();
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) {

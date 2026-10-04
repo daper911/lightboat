@@ -12,6 +12,7 @@ import 'package:fl_clash/lightboat/pages/purchase.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
+import 'package:fl_clash/lightboat/update.dart';
 import 'package:fl_clash/pages/pages.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -229,6 +230,10 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             label: LbStrings.support,
             trailing: LbConfig.supportEmail,
             onTap: () => unawaited(lbOpenUrl(LbConfig.ticketUrl)),
+          ),
+          _MeRow(
+            label: LbStrings.checkUpdate,
+            onTap: () => unawaited(lbCheckForUpdate(context, manual: true)),
           ),
           _MeRow(
             label: LbStrings.exportLogs,

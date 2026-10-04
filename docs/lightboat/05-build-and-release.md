@@ -52,39 +52,35 @@ keyPassword=...
 
 文件命名：`Lightboat-<版本>-android-<abi>.apk`，同时生成 `SHA256SUMS`。
 
-## 4. 分发
+## 4. 分发与检查更新
 
-只在官网提供下载。需要主项目（vpn）配合，见 [02 §9](02-panel-integration.md)：
+2026-10-05 运营方决定：安装包与 `latest.json` 放在 Cloudflare R2 桶 `qzvpn`，经自定义域名 `cdn.cnbetx.com` 公开访问（桶是公开的，不要放私密文件）。安卓与 Windows 共用一份 `latest.json`：
 
 ```
-https://ssr.cnbetx.com/downloads/android/
-  ├─ Lightboat-1.0.0-android-arm64-v8a.apk
-  ├─ Lightboat-1.0.0-android-armeabi-v7a.apk
-  ├─ SHA256SUMS
-  └─ latest.json
+https://cdn.cnbetx.com/lightboat/
+  ├─ latest.json
+  ├─ android/Lightboat-<版本>-android-arm64-v8a.apk
+  └─ windows/Lightboat-<版本>-windows-amd64-setup.exe
 ```
-
-`latest.json`（App 检查更新时读取）：
 
 ```json
 {
-  "version": "1.0.0",
-  "version_code": 10000,
-  "min_supported_code": 100,
-  "published_at": "2026-11-01",
-  "notes": "· 首个正式版\n· 修复部分机型后台断线",
-  "files": {
-    "arm64-v8a": {"url": "https://ssr.cnbetx.com/downloads/android/Lightboat-1.0.0-android-arm64-v8a.apk", "sha256": "..."},
-    "armeabi-v7a": {"url": "...", "sha256": "..."}
-  }
+  "version": "0.3.1",
+  "build": 4,
+  "min_build": 1,
+  "published_at": "2026-10-05",
+  "notes": "· 修复全局模式\n· 首次连接更快",
+  "android": {"arm64-v8a": {"url": "https://cdn.cnbetx.com/lightboat/android/…apk", "sha256": "…"}},
+  "windows": {"amd64-setup": {"url": "https://cdn.cnbetx.com/lightboat/windows/…exe", "sha256": "…"}}
 }
 ```
 
-- App 按本机 ABI 选文件，下载完**先校验 sha256 再安装**；
-- 低于 `min_supported_code` 的版本强制更新（接口不兼容时用）；
-- 下载地址同样要走域名容灾（[03 §5](03-architecture.md)）。
+- `build` 是 `pubspec.yaml` 版本号 `+` 后面的数字，两个平台比较同一个数；低于 `min_build` 的版本强制更新（弹窗不能关闭）；
+- App（`lib/lightboat/update.dart`）进入首页后自动检查，最多 12 小时一次，有新版本才弹窗；「我的 → 检查更新」手动检查；
+- 第一版点「下载」用系统浏览器下载安装包（安卓下载完点通知安装，Windows 运行安装程序）。App 内下载、校验 sha256、直接调起安装留到以后（需要安卓安装权限）；
+- 发布：`python3 tool/lightboat/publish_r2.py --notes "…" --android dist/….apk --windows ….exe`（读 `key.env` 里的 R2 密钥，需要 `boto3`；只传一个平台时保留另一个平台的条目）。
 
-网站「连接设备 → Android」的推荐客户端改成「轻舟 App」，并在显眼位置给出安装引导：允许安装未知来源应用、首次连接的 VPN 授权、保活设置。
+网站「连接设备 → Android / Windows」的下载按钮可以直接指向上面的地址（需要主项目改，02 §9 第 1 条）。
 
 ## 5. 发布流程（每个版本）
 
