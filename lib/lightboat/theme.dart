@@ -55,3 +55,48 @@ class LbColors {
 
   Color get accentSoft => accent.withValues(alpha: 0.12);
 }
+
+extension LbThemeData on ThemeData {
+  /// Paper backgrounds and brand-coloured dialogs and snack bars for every
+  /// route, so pages and FlClash's own dialogs need no per-widget colours.
+  ThemeData get withLightboatBrand {
+    final colors = brightness == Brightness.dark
+        ? LbColors.dark
+        : LbColors.light;
+    return copyWith(
+      scaffoldBackgroundColor: colors.paper,
+      appBarTheme: appBarTheme.copyWith(
+        backgroundColor: colors.paper,
+        foregroundColor: colors.ink,
+        surfaceTintColor: Colors.transparent,
+      ),
+      dialogTheme: dialogTheme.copyWith(
+        backgroundColor: colors.paper,
+        surfaceTintColor: Colors.transparent,
+      ),
+      snackBarTheme: snackBarTheme.copyWith(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: colors.ink,
+        contentTextStyle: textTheme.bodyMedium?.copyWith(color: colors.paper),
+        actionTextColor: colors.mist,
+      ),
+      progressIndicatorTheme: progressIndicatorTheme.copyWith(
+        color: colors.accent,
+      ),
+    );
+  }
+}
+
+/// One look for every short message; errors use the seal red (08 §3).
+void lbToast(BuildContext context, String message, {bool error = false}) {
+  final messenger = ScaffoldMessenger.maybeOf(context);
+  if (messenger == null) return;
+  messenger
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: error ? LbColors.of(context).seal : null,
+      ),
+    );
+}

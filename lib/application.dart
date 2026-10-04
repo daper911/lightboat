@@ -21,6 +21,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'lightboat/root.dart';
 import 'lightboat/strings.dart';
+import 'lightboat/theme.dart';
 
 Widget buildManagerStack({
   required bool isDesktop,
@@ -191,13 +192,13 @@ class ApplicationState extends ConsumerState<Application> {
             pageTransitionsTheme: _pageTransitionsTheme,
             actionIconTheme: _actionIconTheme,
             colorScheme: _getAppColorScheme(brightness: Brightness.light),
-          ).withAppShapes,
+          ).withAppShapes.withLightboatBrand,
           darkTheme: ThemeData(
             useMaterial3: true,
             pageTransitionsTheme: _pageTransitionsTheme,
             actionIconTheme: _actionIconTheme,
             colorScheme: _getAppColorScheme(brightness: Brightness.dark),
-          ).withAppShapes,
+          ).withAppShapes.withLightboatBrand,
           home: KeyboardInsetHold(child: child!),
         );
       },

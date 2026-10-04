@@ -130,6 +130,17 @@ void main() {
     expect(find.byType(LbAppsPage), findsOneWidget);
   });
 
+  testWidgets('refreshing says how it went', (tester) async {
+    await pumpMe(tester);
+
+    await tester.tap(find.text(LbStrings.refreshPlan));
+    await tester.pumpAndSettle();
+    final ended =
+        find.text(LbStrings.refreshDone).evaluate().isNotEmpty ||
+        find.text(LbStrings.syncFailed).evaluate().isNotEmpty;
+    expect(ended, isTrue);
+  });
+
   testWidgets('logging out asks first, then clears the session', (
     tester,
   ) async {
@@ -144,7 +155,12 @@ void main() {
 
     await tester.tap(find.text(LbStrings.logout));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(LbStrings.confirm));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text(LbStrings.logout),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(container.read(lbSessionProvider).phase, LbPhase.signedOut);
     expect(store.saved.jwt, isNull);

@@ -35,7 +35,7 @@ class _LbMePageState extends ConsumerState<LbMePage> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text(LbStrings.logout),
+        title: const Text(LbStrings.logoutTitle),
         content: const Text(LbStrings.logoutConfirm),
         actions: [
           TextButton(
@@ -43,8 +43,11 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             child: const Text(LbStrings.cancel),
           ),
           TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: LbColors.of(context).seal,
+            ),
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(LbStrings.confirm),
+            child: const Text(LbStrings.logout),
           ),
         ],
       ),
@@ -81,18 +84,26 @@ class _LbMePageState extends ConsumerState<LbMePage> {
   }
 
   Future<void> _exportLogs() async {
-    final messenger = ScaffoldMessenger.of(context);
     try {
       if (!await lbExportLogs(ref)) return;
-      messenger.showSnackBar(
-        const SnackBar(content: Text(LbStrings.exportLogsDone)),
-      );
+      if (mounted) lbToast(context, LbStrings.exportLogsDone);
     } catch (error) {
       commonPrint.log('lightboat export logs: $error');
-      messenger.showSnackBar(
-        const SnackBar(content: Text(LbStrings.exportLogsFailed)),
-      );
+      if (mounted) lbToast(context, LbStrings.exportLogsFailed, error: true);
     }
+  }
+
+  Future<void> _refresh() async {
+    lbToast(context, LbStrings.syncing);
+    final session = ref.read(lbSessionProvider.notifier);
+    await session.refresh();
+    if (!mounted) return;
+    final failed = ref.read(lbSessionProvider).syncError != null;
+    lbToast(
+      context,
+      failed ? LbStrings.syncFailed : LbStrings.refreshDone,
+      error: failed,
+    );
   }
 
   void _showAbout() {
@@ -210,8 +221,7 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             ),
           _MeRow(
             label: LbStrings.refreshPlan,
-            onTap: () =>
-                unawaited(ref.read(lbSessionProvider.notifier).refresh()),
+            onTap: () => unawaited(_refresh()),
           ),
           _MeRow(
             label: LbStrings.orders,

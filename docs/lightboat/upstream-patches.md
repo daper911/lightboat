@@ -8,7 +8,7 @@
 
 | 文件 | 改动 | 原因 | 合并上游时注意 |
 |---|---|---|---|
-| `lib/application.dart` | `MaterialApp.home` 的 `HomePage()` 换成 `LbRoot()`；`title` 用 `LbStrings.appName` | 轻舟的登录页 / 首页取代 FlClash 首页；最近任务里显示「轻舟」 | FlClash 的 `HomePage` 仍可从「我的 → 关于」连点 7 次后的「高级」进入 |
+| `lib/application.dart` | `MaterialApp.home` 的 `HomePage()` 换成 `LbRoot()`；`title` 用 `LbStrings.appName`；`theme` / `darkTheme` 末尾加 `.withLightboatBrand`（纸色背景、品牌色对话框与底部提示，`lib/lightboat/theme.dart`） | 轻舟的登录页 / 首页取代 FlClash 首页；最近任务里显示「轻舟」 | FlClash 的 `HomePage` 仍可从「我的 → 关于」连点 7 次后的「高级」进入 |
 | `lib/bootstrap.dart` | `_initApp()` 开头加 `await lightboatPrepare(_container);` | 在 FlClash 弹出免责声明 / Crashlytics 提示之前替用户应答，关闭 GitHub 更新检查，设置品牌色与订阅 UA，恢复登录状态 | 上游若改动 `_initApp` 的启动顺序，确认这行仍在首个对话框之前 |
 | `pubspec.yaml` | `version` 改为轻舟自己的版本号（`0.1.0+1` 起，规则见 05 §2） | 版本号与 UA 都取自这里 | 合并上游时保留我们的 `version` 行 |
 | `lib/common/picker.dart`、`lib/providers/actions/profiles.dart`、`lib/views/profiles/add.dart`、`lib/pages/pages.dart`；删除 `lib/pages/scan.dart`、`test/pages/scan_test.dart`；`test/views/add_profile_view_test.dart` 改为断言没有扫码入口 | 删除「扫二维码导入配置」（`pickerConfigQRCode`、`addProfileFormQrCode`、`ScanPage`、添加配置页的扫码入口） | 扫码依赖的 Google ML Kit 自带 Google 数据上报组件（datatransport），与「不集成统计」冲突；轻舟界面也用不到（运营方 2026-10-04 决定删除） | 上游改动扫码相关代码时直接丢弃；`lib/common/link.dart` 的 `profileUrlFromQrCodes` 保留未动，现在只有测试在用 |

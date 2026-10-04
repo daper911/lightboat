@@ -43,6 +43,7 @@ abstract final class LbStrings {
   static const noPlan = '你还没有可用的套餐';
   static const buyPlan = '去购买';
   static const renew = '去续费';
+  static const buy = '购买';
   static const unlimited = '不限';
   static const neverExpires = '长期有效';
   static const switchPlan = '切换套餐';
@@ -80,6 +81,7 @@ abstract final class LbStrings {
   static const logsHeading = '—— 日志（token、密码、订阅地址已打码）——';
   static const about = '关于';
   static const logout = '退出登录';
+  static const logoutTitle = '确定退出登录？';
   static const logoutConfirm = '退出后会断开连接，并清除本机保存的登录信息。';
   static const cancel = '取消';
   static const confirm = '确定';
@@ -90,6 +92,7 @@ abstract final class LbStrings {
   static const relogin = '重新登录';
   static const syncFailed = '暂时无法更新线路，已使用上次的配置';
   static const syncing = '正在更新线路…';
+  static const refreshDone = '套餐和线路已更新';
 
   static const aboutBasedOn =
       '轻舟基于开源项目 FlClash（GPL-3.0）与 mihomo 内核（GPL-3.0）开发。';
@@ -147,7 +150,6 @@ abstract final class LbStrings {
   static const copied = '已复制';
   static const qrPayHint = '用对应的 App 扫描二维码付款，或点下面的按钮打开。';
 
-  static const modeTitle = '模式';
   static const modeSmart = '智能分流';
   static const modeGlobal = '全局代理';
   static const modeSmartHint = '推荐：国内网站直连，国外走轻舟';
@@ -162,7 +164,6 @@ abstract final class LbStrings {
   static const connectFailedHint = '如果刚才拒绝了 VPN 授权，点「重试」后请选择「确定」。';
   static const retry = '重试';
 
-  static const settings = '设置';
   static const splitTunnel = '分应用代理';
   static const splitEnable = '启用分应用代理';
   static const splitExclude = '选中的应用不走轻舟';

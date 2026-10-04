@@ -46,7 +46,7 @@ Future<bool> lbRemindPlan(
         TextButton(
           onPressed: () => Navigator.of(context).pop(true),
           child: Text(
-            subscription.renewable ? LbStrings.renew : LbStrings.buyPlan,
+            subscription.renewable ? LbStrings.renewPlan : LbStrings.buy,
           ),
         ),
       ],

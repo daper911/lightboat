@@ -69,7 +69,7 @@ void main() {
     final first = lbRemindPlan(context, plan, now: _now);
     await tester.pumpAndSettle();
     expect(find.text(LbStrings.expiredTip), findsOneWidget);
-    expect(find.text(LbStrings.buyPlan), findsOneWidget);
+    expect(find.text(LbStrings.buy), findsOneWidget);
     await tester.tap(find.text(LbStrings.later));
     await tester.pumpAndSettle();
     expect(await first, isTrue);

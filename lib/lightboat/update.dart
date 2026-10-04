@@ -6,6 +6,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/lightboat/config.dart';
 import 'package:fl_clash/lightboat/pages/login.dart';
 import 'package:fl_clash/lightboat/strings.dart';
+import 'package:fl_clash/lightboat/theme.dart';
 import 'package:fl_clash/state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -83,7 +84,6 @@ Future<void> lbCheckForUpdate(
   bool manual = false,
   Future<LbRelease?> Function() fetch = lbFetchRelease,
 }) async {
-  final messenger = ScaffoldMessenger.maybeOf(context);
   if (!manual) {
     final prefs = await SharedPreferences.getInstance();
     final last = prefs.getInt(_checkedAtKey) ?? 0;
@@ -97,19 +97,13 @@ Future<void> lbCheckForUpdate(
     release = await fetch();
   } catch (error) {
     commonPrint.log('lightboat update check: $error');
-    if (manual) {
-      messenger?.showSnackBar(
-        const SnackBar(content: Text(LbStrings.updateCheckFailed)),
-      );
+    if (manual && context.mounted) {
+      lbToast(context, LbStrings.updateCheckFailed, error: true);
     }
     return;
   }
   if (release == null || !release.isNewerThan(current)) {
-    if (manual) {
-      messenger?.showSnackBar(
-        const SnackBar(content: Text(LbStrings.upToDate)),
-      );
-    }
+    if (manual && context.mounted) lbToast(context, LbStrings.upToDate);
     return;
   }
   if (!context.mounted) return;
