@@ -33,7 +33,7 @@
 - 2026-10-04：GitHub 覆盖率检查修复（`30ff1b2a`：补轻舟界面测试并登记覆盖率标准）。
 - 2026-10-04：**整合为安卓 + Windows 共用仓库**：仓库改名 `daper911/lightboat`，本机目录 `projects/lightboat`，Docker 镜像 `lightboat-env`；加入 Windows 规划（`docs/lightboat/windows/`）和云端构建流程 `.github/workflows/lightboat-windows.yml`（草稿，未跑过）。仓库保持公开（Windows 云端构建免费）。
 - 安卓下一步（运营方定的顺序）：0.3.0 真机反馈；后台保活引导、自动连接；检查更新先预留（需要主项目托管 `latest.json`）；还有导出日志、公告。
-- 2026-10-04：**W0 云端构建跑通**（`lightboat-windows` 首次运行即通过，run 37213624273，约 14 分钟）。W0 包仍用 FlClash 原版的 AppId、安装目录、数据目录（W1 才改），运营方的电脑上若有正版 FlClash 会冲突。W2 §2 已写好待确认项的代码推断，**等运营方实测**（W-I1、W-I5、W-A1、W-C1、W-C2、W-C6、W-C8，另加 W-I3、W-C9、W-A5）后回填。
+- 2026-10-04：**W0 云端构建跑通**（`lightboat-windows` 首次运行即通过，run 37213624273，约 14 分钟）。W0 包仍用 FlClash 原版的 AppId、安装目录、数据目录（W1 才改），运营方的电脑上若有正版 FlClash 会冲突。运营方实测：全新 AWS Windows Server（香港）上登录报「网络连接失败」，原因是系统里没有 ISRG Root X2，已内置根证书修复（`53c22cfb`），修复后在该机器上登录、连接、打开 google.com 都正常；运营方自己在国内的电脑上 hysteria2 能测速、Reality 超时，但浏览器和 Telegram 上不了网，原因待查（怀疑是线路被墙，或 `🔍 Google` 等按应用分流的分组没有跟着首页的线路切换）。W2 §2 已写好待确认项的代码推断，其余项**等运营方实测**（W-I1、W-I5、W-A1、W-C1、W-C2、W-C6、W-C8，另加 W-I3、W-C9、W-A5）后回填。
 - **Windows 下一步：W0 实测反馈 → W1**（见 `docs/lightboat/windows/W6-milestones.md`）。
 - 完成一个里程碑，就更新本节。
 
