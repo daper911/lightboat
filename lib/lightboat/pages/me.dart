@@ -201,19 +201,13 @@ class _LbMePageState extends ConsumerState<LbMePage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          Divider(color: colors.rule),
+          const SizedBox(height: 8),
+          const _MeSection(LbStrings.sectionPlan),
           if (session.subscriptions.length > 1)
             _MeRow(
               label: LbStrings.switchPlan,
               onTap: () => unawaited(_switchPlan()),
             ),
-          _MeRow(
-            label: LbStrings.splitTunnel,
-            onTap: () => Navigator.of(
-              context,
-            ).push(MaterialPageRoute<void>(builder: (_) => const LbAppsPage())),
-          ),
           _MeRow(
             label: LbStrings.refreshPlan,
             onTap: () =>
@@ -223,6 +217,14 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             label: LbStrings.orders,
             onTap: () => unawaited(lbOpenUrl(LbConfig.siteLink('order'))),
           ),
+          const _MeSection(LbStrings.sectionConnection),
+          _MeRow(
+            label: LbStrings.splitTunnel,
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => const LbAppsPage())),
+          ),
+          const _MeSection(LbStrings.sectionHelp),
           if (session.hasJwt)
             _MeRow(
               label: LbStrings.announcements,
@@ -242,12 +244,13 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             onTap: () => unawaited(lbOpenUrl(LbConfig.ticketUrl)),
           ),
           _MeRow(
-            label: LbStrings.checkUpdate,
-            onTap: () => unawaited(lbCheckForUpdate(context, manual: true)),
-          ),
-          _MeRow(
             label: LbStrings.exportLogs,
             onTap: () => unawaited(_exportLogs()),
+          ),
+          const _MeSection(LbStrings.sectionAbout),
+          _MeRow(
+            label: LbStrings.checkUpdate,
+            onTap: () => unawaited(lbCheckForUpdate(context, manual: true)),
           ),
           _MeRow(
             label: LbStrings.about,
@@ -264,6 +267,7 @@ class _LbMePageState extends ConsumerState<LbMePage> {
                 context,
               ).push(MaterialPageRoute<void>(builder: (_) => const HomePage())),
             ),
+          const SizedBox(height: 12),
           Divider(color: colors.rule),
           _MeRow(
             label: LbStrings.logout,
@@ -271,6 +275,26 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             onTap: () => unawaited(_confirmLogout()),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _MeSection extends StatelessWidget {
+  final String title;
+
+  const _MeSection(this.title);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 20, 4, 4),
+      child: Text(
+        title,
+        style: context.textTheme.labelMedium?.copyWith(
+          color: LbColors.of(context).muted,
+          letterSpacing: 1,
+        ),
       ),
     );
   }

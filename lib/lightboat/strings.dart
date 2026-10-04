@@ -57,6 +57,10 @@ abstract final class LbStrings {
   static const tutorial = '使用教程';
   static const support = '联系客服';
   static const orders = '订单与钱包';
+  static const sectionPlan = '套餐';
+  static const sectionConnection = '连接';
+  static const sectionHelp = '帮助';
+  static const sectionAbout = '关于轻舟';
   static const planReminderTitle = '套餐提醒';
   static const announcements = '公告';
   static const noAnnouncements = '暂时没有公告';
