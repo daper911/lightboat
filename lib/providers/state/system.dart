@@ -207,7 +207,7 @@ SharedState sharedState(Ref ref) {
   );
   final vpnSetting = ref.watch(vpnSettingProvider);
   final safeMode = ref.watch(safeModeProvider);
-  final currentProfileName = currentProfile.label;
+  final currentProfileName = ref.watch(lbNotificationTitleProvider);
   final selectedMap = currentProfile.selectedMap;
   final onlyStatisticsProxy = appSetting.onlyStatisticsProxy;
   final crashlytics = appSetting.crashlytics;

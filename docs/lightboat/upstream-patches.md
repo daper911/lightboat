@@ -12,6 +12,7 @@
 | `lib/bootstrap.dart` | `_initApp()` 开头加 `await lightboatPrepare(_container);` | 在 FlClash 弹出免责声明 / Crashlytics 提示之前替用户应答，关闭 GitHub 更新检查，设置品牌色与订阅 UA，恢复登录状态 | 上游若改动 `_initApp` 的启动顺序，确认这行仍在首个对话框之前 |
 | `pubspec.yaml` | `version` 改为轻舟自己的版本号（`0.1.0+1` 起，规则见 05 §2） | 版本号与 UA 都取自这里 | 合并上游时保留我们的 `version` 行 |
 | `lib/common/picker.dart`、`lib/providers/actions/profiles.dart`、`lib/views/profiles/add.dart`、`lib/pages/pages.dart`；删除 `lib/pages/scan.dart`、`test/pages/scan_test.dart`；`test/views/add_profile_view_test.dart` 改为断言没有扫码入口 | 删除「扫二维码导入配置」（`pickerConfigQRCode`、`addProfileFormQrCode`、`ScanPage`、添加配置页的扫码入口） | 扫码依赖的 Google ML Kit 自带 Google 数据上报组件（datatransport），与「不集成统计」冲突；轻舟界面也用不到（运营方 2026-10-04 决定删除） | 上游改动扫码相关代码时直接丢弃；`lib/common/link.dart` 的 `profileUrlFromQrCodes` 保留未动，现在只有测试在用 |
+| `lib/providers/state/system.dart`、`lib/providers/state.dart` | `sharedState` 的 `currentProfileName` 改为 `ref.watch(lbNotificationTitleProvider)`（`state.dart` 加对应 import） | 安卓连接通知的标题显示「轻舟 · 当前节点」（自动选择时显示它选中的节点），`lib/lightboat/notification.dart` | 合并上游时若 `sharedState` 改名或拆分，把通知标题的取值换回这个 provider |
 | `pubspec.yaml` | 删除 `mobile_scanner`、`image_picker`；`fonts:` 新增 `LightboatSerif`（`assets/fonts/LightboatSerif.ttf`，许可证 `LightboatSerif-OFL.txt`） | 同上；品牌标题字体（08 §4）：网站「轻舟宋」子集再裁到只含「轻舟已过万重山」，2.8 KB | |
 | `pubspec.yaml` | 新增依赖 `qr`（纯 Dart） | App 内付款页画 USDT 收款二维码 | |
 | `pubspec.yaml` | `assets:` 新增 `assets/lightboat/rules/` | 内置订阅用到的 20 个规则集（gzip 后约 0.8 MB），首次连接不用先下载 5.3 MB（02 §5） | 合并上游时保留这一行 |
