@@ -29,6 +29,7 @@ parser.add_argument('--android')
 parser.add_argument('--windows')
 parser.add_argument('--notes', required=True)
 parser.add_argument('--min-build', type=int)
+parser.add_argument('--version', help='X.Y.Z+N of the installers; defaults to pubspec.yaml')
 parser.add_argument('--env', default=str(root / 'key.env'))
 args = parser.parse_args()
 
@@ -37,7 +38,8 @@ env = dict(
     for line in pathlib.Path(args.env).read_text().splitlines()
     if re.match(r'^R2_\w+=', line)
 )
-version, build = re.search(r'^version:\s*([\d.]+)\+(\d+)', (root / 'pubspec.yaml').read_text(), re.M).groups()
+source = args.version or re.search(r'^version:\s*(\S+)', (root / 'pubspec.yaml').read_text(), re.M)[1]
+version, build = re.fullmatch(r'([\d.]+)\+(\d+)', source).groups()
 s3 = boto3.client(
     's3',
     endpoint_url=f"https://{env['R2_ACCOUNT_ID']}.r2.cloudflarestorage.com",
@@ -57,7 +59,9 @@ def upload(path, platform, file_key, name):
     data = pathlib.Path(path).read_bytes()
     key = f'{PREFIX}/{platform}/{name}'
     s3.put_object(Bucket=BUCKET, Key=key, Body=data, ContentType='application/octet-stream')
-    latest.setdefault(platform, {})[file_key] = {
+    entry = latest.setdefault(platform, {})
+    entry.update(version=version, build=int(build))
+    entry[file_key] = {
         'url': f'{CDN}/{key}',
         'sha256': hashlib.sha256(data).hexdigest(),
     }
@@ -68,9 +72,16 @@ if args.android:
     upload(args.android, 'android', 'arm64-v8a', f'Lightboat-{version}-android-arm64-v8a.apk')
 if args.windows:
     upload(args.windows, 'windows', 'amd64-setup', f'Lightboat-{version}-windows-amd64-setup.exe')
+# Apps up to 0.4.0 read only the top-level version, so it names the oldest
+# platform entry: a trailing installer delays an update instead of looping one.
+oldest = min(
+    (latest[p] for p in ('android', 'windows') if 'build' in latest.get(p, {})),
+    key=lambda entry: entry['build'],
+    default={'version': version, 'build': int(build)},
+)
 latest.update(
-    version=version,
-    build=int(build),
+    version=oldest['version'],
+    build=oldest['build'],
     min_build=args.min_build if args.min_build is not None else latest.get('min_build', 1),
     published_at=datetime.date.today().isoformat(),
     notes=args.notes,

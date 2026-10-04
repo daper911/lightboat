@@ -12,7 +12,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// One platform's entry of `latest.json` (05 §4). Builds are the `+N` of the
-/// shared pubspec version, so Android and Windows compare the same number.
+/// shared pubspec version; each platform carries its own, since its installer
+/// can trail the other's.
 class LbRelease {
   final String version;
   final int build;
@@ -34,12 +35,19 @@ class LbRelease {
       'windows' => ('windows', 'amd64-setup'),
       _ => (platform, ''),
     };
-    final entry = (json[section] as Map?)?[file] as Map?;
+    final platformEntry = json[section] as Map?;
+    final entry = platformEntry?[file] as Map?;
     final url = entry?['url'] as String?;
     if (url == null || url.isEmpty) return null;
     return LbRelease(
-      version: json['version'] as String? ?? '',
-      build: (json['build'] as num?)?.toInt() ?? 0,
+      version:
+          platformEntry?['version'] as String? ??
+          json['version'] as String? ??
+          '',
+      build:
+          (platformEntry?['build'] as num?)?.toInt() ??
+          (json['build'] as num?)?.toInt() ??
+          0,
       minBuild: (json['min_build'] as num?)?.toInt() ?? 0,
       notes: json['notes'] as String? ?? '',
       url: url,

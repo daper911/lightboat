@@ -70,15 +70,17 @@ https://cdn.cnbetx.com/lightboat/
   "min_build": 1,
   "published_at": "2026-10-05",
   "notes": "· 修复全局模式\n· 首次连接更快",
-  "android": {"arm64-v8a": {"url": "https://cdn.cnbetx.com/lightboat/android/…apk", "sha256": "…"}},
-  "windows": {"amd64-setup": {"url": "https://cdn.cnbetx.com/lightboat/windows/…exe", "sha256": "…"}}
+  "android": {"version": "0.3.1", "build": 4, "arm64-v8a": {"url": "https://cdn.cnbetx.com/lightboat/android/…apk", "sha256": "…"}},
+  "windows": {"version": "0.3.1", "build": 4, "amd64-setup": {"url": "https://cdn.cnbetx.com/lightboat/windows/…exe", "sha256": "…"}}
 }
 ```
+
+- **每个平台的条目带自己的 `version` / `build`**（两个平台的安装包不一定同时就绪，Windows 要等云端构建）；App 优先读本平台的，没有才读顶层。**顶层的 `version` / `build` 取两个平台中较旧的那个**：0.4.0 及以前的 App 只读顶层，这样某个平台的新包还没上传时只会晚一点提示，不会出现「更新了还是旧版」的循环（2026-10-05 出过一次：本地 pubspec 已升到 0.4.1，脚本却上传了云端构建的 0.4.0 Windows 包；已修，并加了 `--version`）；
 
 - `build` 是 `pubspec.yaml` 版本号 `+` 后面的数字，两个平台比较同一个数；低于 `min_build` 的版本强制更新（弹窗不能关闭）；
 - App（`lib/lightboat/update.dart`）进入首页后自动检查，最多 12 小时一次，有新版本才弹窗；「我的 → 检查更新」手动检查；
 - 第一版点「下载」用系统浏览器下载安装包（安卓下载完点通知安装，Windows 运行安装程序）。App 内下载、校验 sha256、直接调起安装留到以后（需要安卓安装权限）；
-- 发布：`python3 tool/lightboat/publish_r2.py --notes "…" --android dist/….apk --windows ….exe`（读 `key.env` 里的 R2 密钥，需要 `boto3`；只传一个平台时保留另一个平台的条目）。
+- 发布：`python3 tool/lightboat/publish_r2.py --notes "…" --android dist/….apk --windows ….exe`（读 `key.env` 里的 R2 密钥，需要 `boto3`；只传一个平台时保留另一个平台的条目）。**上传的安装包不是本地刚构建的（例如从 Actions 下载的 Windows 包）时，必须用 `--version X.Y.Z+N` 写明它的版本**，否则会按本地 `pubspec.yaml` 的版本命名。
 
 网站「连接设备 → Android / Windows」的下载按钮可以直接指向上面的地址（需要主项目改，02 §9 第 1 条）。
 

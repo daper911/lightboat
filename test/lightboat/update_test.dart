@@ -55,6 +55,20 @@ void main() {
     expect(LbRelease.fromJson(_latest, 'linux'), isNull);
   });
 
+  test('a platform entry carries its own version when it trails', () {
+    final release = LbRelease.fromJson({
+      ..._latest,
+      'windows': {
+        'version': '0.3.9',
+        'build': 4,
+        'amd64-setup': {'url': 'https://cdn.example/w.exe'},
+      },
+    }, 'windows')!;
+    expect(release.version, '0.3.9');
+    expect(release.isNewerThan(4), isFalse);
+    expect(LbRelease.fromJson(_latest, 'android')!.build, 5);
+  });
+
   test('compares builds and knows when an update is required', () {
     final release = LbRelease.fromJson(_latest, 'android')!;
     expect(release.isNewerThan(4), isTrue);

@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
-import 'package:fl_clash/lightboat/pages/home.dart';
+import 'package:fl_clash/lightboat/line_groups.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
 import 'package:fl_clash/models/models.dart';
