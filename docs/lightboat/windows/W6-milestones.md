@@ -14,6 +14,8 @@
 
 W0 是一次低成本验证：如果 FlClash 在 Windows 上的基本体验（系统代理、睡眠唤醒、异常退出）有严重问题且难以修补，就在这里停下，重新讨论是否改用 Clash Verge Rev（W2 §1），损失只有一天。
 
+W0 包的注意事项：它还沿用 FlClash 原版的 AppId、安装目录（`C:\Program Files\FlClash`）和数据目录（`%APPDATA%\com.follow\clash`），开始菜单里也叫 FlClash。所以：测试电脑上不能有正版 FlClash（会被覆盖并共用配置）；W1 改了 AppId 之后，要先在「设置 → 应用」里卸载 W0 包再装 W1 包，否则会装成两份。
+
 ## 与安卓的配合
 
 - 同一个 `main` 分支。Windows 的改动不得破坏安卓：每个里程碑结束时，AI 在本机构建一次安卓 debug 包确认能编译（`env/run.sh dart setup.dart android --arch arm64`），涉及共用代码时请运营方顺手在手机上点一下登录和连接；

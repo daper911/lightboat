@@ -12,7 +12,7 @@ Flutter 的 Windows 程序只能在 Windows 上编译（需要 Visual Studio 的
 
 ## 2. 构建流程 `lightboat-windows`
 
-文件：`.github/workflows/lightboat-windows.yml`（草稿在暂存区，整合时放入，W0 跑通后修正）。
+文件：`.github/workflows/lightboat-windows.yml`。2026-10-04 首次运行（W0）未作修改即通过：[run 37213624273](https://github.com/daper911/lightboat/actions/runs/37213624273)，用时约 14 分钟（其中编译打包 6 分钟），产物 zip 约 104 MB。
 
 | 触发 | 用途 |
 |---|---|
@@ -22,7 +22,7 @@ Flutter 的 Windows 程序只能在 Windows 上编译（需要 Visual Studio 的
 
 步骤：检出（含子模块）→ 安装 Go、Rust 缓存、Flutter（版本与 FlClash CI 一致）→ `flutter pub get` → `flutter analyze` → `dart setup.dart windows`（生成 `dist/*.exe` 和 `dist/*.zip`）→ 计算 SHA256 → 上传为 Artifact（保留 14 天）。
 
-一次构建约 15–25 分钟（首次更久，之后有缓存）。同一分支连续推送时，旧的构建会被自动取消，只保留最新一次。
+一次构建约 15 分钟（首次实测 14 分钟）。同一分支连续推送时，旧的构建会被自动取消，只保留最新一次。
 
 **AI 怎么看结果**：本机没有 `gh` 命令时，用公开接口查询：
 
@@ -31,7 +31,7 @@ curl -s "https://api.github.com/repos/daper911/lightboat/actions/workflows/light
   | python3 -c "import json,sys;[print(r['status'],r['conclusion'],r['html_url']) for r in json.load(sys.stdin)['workflow_runs']]"
 ```
 
-失败时打开 `html_url` 对应的日志（公开仓库的日志可以直接用接口下载），修好再推。需要更方便时可以在本机装 `gh` 并登录（运营方同意后）。
+失败时用 `…/actions/runs/<id>/jobs` 接口看是哪一步失败（不需要登录）；**日志下载接口即使是公开仓库也要登录**（未登录返回 403），所以要看具体报错，需请运营方在运行页面里展开失败步骤截图，或在本机装 `gh` 并登录（运营方同意后）。修好再推。需要更方便时可以在本机装 `gh` 并登录（运营方同意后）。
 
 ## 3. 安装包
 

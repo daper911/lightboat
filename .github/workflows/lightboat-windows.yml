@@ -1,6 +1,6 @@
-# Lightboat Windows build. Draft written 2026-10-04 from FlClash's own build.yaml
-# (desktop + release jobs); it has not run yet. Milestone W0 makes it pass and
-# fixes whatever the runner disagrees with. See docs/lightboat/windows/W4-build-and-ci.md.
+# Lightboat Windows build, adapted from FlClash's own build.yaml (desktop +
+# release jobs); first passed unchanged on 2026-10-04 (milestone W0).
+# See docs/lightboat/windows/W4-build-and-ci.md.
 name: lightboat-windows
 
 on:
