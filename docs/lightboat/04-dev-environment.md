@@ -23,6 +23,8 @@
 2. 可见性：Fork 公开仓库默认就是公开的。GPL-3.0 要求**对外分发 APK 时公开对应源码**，所以公开没有问题。如果开发期间不想公开：先不 Fork，改为在 GitHub 新建一个空的私有仓库 `lightboat-android`，再告诉 AI「用导入方式创建」（AI 会把 FlClash 的代码推进去）。
 3. 告诉 AI 仓库已经建好。
 
+> 2026-10-04 实际采用的是私有仓库 + 导入方式：`origin` 是 `git@github.com:daper911/lightboat-android.git`，`upstream` 是 FlClash。对外分发 APK 之前要把仓库改为公开（05 §6）。
+
 ## 2. 克隆到本机（AI 来做）
 
 ```bash
@@ -58,7 +60,16 @@ cd /home/ubuntu/projects/lightboat-android
 sudo docker build -t lightboat-android-env -f env/Dockerfile env/
 ```
 
-镜像较大（约 8–12 GB），第一次构建需要 20–40 分钟。
+实测（2026-10-04）：镜像约 3.3 GB，构建约 10 分钟。
+
+日常在容器里执行命令用 [env/run.sh](../../env/run.sh)，它挂好了各个缓存卷，并在结束后把容器写出的文件交还给当前用户：
+
+```bash
+env/run.sh flutter test
+env/run.sh dart setup.dart android --arch arm64
+```
+
+`lb-android` 卷保存 debug 签名证书（`~/.android/debug.keystore`），保证每次开发构建的签名一致、能覆盖安装。**不要删除这个卷**，否则手机上的测试包要先卸载才能装新包。
 
 ## 4. 第一次构建 APK
 

@@ -1,5 +1,5 @@
 # Build environment for the Lightboat Android client (a FlClash fork).
-# DRAFT, written 2026-10-04 and not built yet: verify on the first build (milestone M0) and fix here.
+# Verified on the first build (milestone M0, 2026-10-04).
 # Toolchain versions follow FlClash's release CI (.github/workflows/build.yaml, android/gradle/libs.versions.toml);
 # when you merge a newer FlClash, re-check them there.
 #
@@ -25,8 +25,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 
-# Android SDK + NDK. Gradle may fetch an exact platform/build-tools revision on its own; licenses are
-# accepted here so that works non-interactively.
+# Android SDK + NDK. The second sdkmanager line holds what the plugins' Gradle builds asked for on the first
+# build (2026-10-04); Gradle would otherwise fetch them into the throwaway container on every run.
 ENV ANDROID_HOME=/opt/android-sdk ANDROID_SDK_ROOT=/opt/android-sdk
 RUN mkdir -p "$ANDROID_HOME/cmdline-tools" \
     && curl -fsSL "https://dl.google.com/android/repository/commandlinetools-linux-${ANDROID_CMDLINE_TOOLS}_latest.zip" -o /tmp/clt.zip \
@@ -34,7 +34,8 @@ RUN mkdir -p "$ANDROID_HOME/cmdline-tools" \
     && rm -rf /tmp/clt /tmp/clt.zip
 ENV PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
 RUN yes | sdkmanager --licenses >/dev/null \
-    && sdkmanager "platform-tools" "platforms;${ANDROID_PLATFORM}" "build-tools;${ANDROID_BUILD_TOOLS}" "ndk;${ANDROID_NDK}"
+    && sdkmanager "platform-tools" "platforms;${ANDROID_PLATFORM}" "build-tools;${ANDROID_BUILD_TOOLS}" "ndk;${ANDROID_NDK}" \
+         "platforms;android-36" "platforms;android-35" "build-tools;36.0.0" "cmake;3.22.1"
 
 # Go (mihomo core)
 RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" | tar -C /usr/local -xz
@@ -48,7 +49,8 @@ ENV PATH=/root/.cargo/bin:$PATH
 
 # Flutter, pinned
 RUN git clone --depth 1 --branch "${FLUTTER_VERSION}" https://github.com/flutter/flutter.git /opt/flutter
-ENV PATH=/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:$PATH
+# /root/.pub-cache/bin: setup.dart installs flutter_distributor there with `dart pub global activate`.
+ENV PATH=/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:/root/.pub-cache/bin:$PATH
 RUN git config --global --add safe.directory '*' \
     && flutter config --no-analytics --no-cli-animations \
     && dart --disable-analytics \

@@ -25,7 +25,9 @@
 ## 2. 当前状态与下一步
 
 - 2026-10-04：只有文档，代码仓库还没建。
-- 下一步是里程碑 **M0**：运营方在 GitHub 上 Fork FlClash 为 `daper911/lightboat-android`（04 §1），然后由你克隆、把文档放进仓库（04 §2）、构建 `env/Dockerfile`（**草稿，没有构建过**，按实际报错修正）、用原版 FlClash 打出 arm64 debug 包。
+- 2026-10-04：**M0 完成**。私有仓库 `daper911/lightboat-android`（导入方式，不是 Fork），`upstream` 指向 FlClash；Docker 环境已验证，原版 FlClash arm64 包构建成功。容器内命令用 `env/run.sh <命令>`。
+- 2026-10-04：**M1 原型代码完成**（待真机验证）：包名 `com.lightboat.app`（运营方确认），App 名「轻舟」、印章图标，去掉 Firebase；`lib/lightboat/` 实现登录（含滑块）、自动拉订阅、一键连接、线路选择、我的页；对 FlClash 的改动见 `docs/lightboat/upstream-patches.md`。
+- 下一步：运营方建测试账号并真机验证 M1（06「账号」「连接」用例）；之后进入 M2（品牌细节、隐藏高级界面的入口打磨）与 M3（导出日志、检查更新、公告）。
 - 完成一个里程碑，就更新本节。
 
 ## 3. 硬性约束
