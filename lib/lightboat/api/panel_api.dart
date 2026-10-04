@@ -348,6 +348,16 @@ class PanelApi {
     return LbCheckout.fromPanel(data.cast<String, Object?>());
   }
 
+  Future<List<LbAnnouncement>> announcements(String jwt) async =>
+      LbAnnouncement.listFrom(
+        await _call(
+          'GET',
+          '/v1/public/announcement/list',
+          token: jwt,
+          query: {'page': 1, 'size': 20},
+        ),
+      );
+
   Future<List<LbSubscription>> subscriptions(String jwt) async {
     final data =
         await _call('GET', '/v1/public/user/subscribe', token: jwt) as Map?;

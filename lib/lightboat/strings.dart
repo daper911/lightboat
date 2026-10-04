@@ -57,6 +57,11 @@ abstract final class LbStrings {
   static const tutorial = '使用教程';
   static const support = '联系客服';
   static const orders = '订单与钱包';
+  static const announcements = '公告';
+  static const noAnnouncements = '暂时没有公告';
+  static const gotIt = '知道了';
+  static const pinnedMark = '［置顶］';
+  static const loadAction = '加载';
   static const checkUpdate = '检查更新';
   static const upToDate = '已经是最新版本';
   static const updateCheckFailed = '检查更新失败，请稍后再试';

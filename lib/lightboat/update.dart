@@ -81,6 +81,7 @@ const _autoCheckEvery = Duration(hours: 12);
 Future<void> lbCheckForUpdate(
   BuildContext context, {
   bool manual = false,
+  Future<LbRelease?> Function() fetch = lbFetchRelease,
 }) async {
   final messenger = ScaffoldMessenger.maybeOf(context);
   if (!manual) {
@@ -93,7 +94,7 @@ Future<void> lbCheckForUpdate(
   final current = int.tryParse(globalState.packageInfo.buildNumber) ?? 0;
   final LbRelease? release;
   try {
-    release = await lbFetchRelease();
+    release = await fetch();
   } catch (error) {
     commonPrint.log('lightboat update check: $error');
     if (manual) {

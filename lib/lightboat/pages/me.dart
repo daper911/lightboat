@@ -4,6 +4,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/lightboat/config.dart';
 import 'package:fl_clash/lightboat/diagnostics.dart';
+import 'package:fl_clash/lightboat/pages/announcements.dart';
 import 'package:fl_clash/lightboat/pages/apps.dart';
 import 'package:fl_clash/lightboat/pages/home.dart';
 import 'package:fl_clash/lightboat/pages/login.dart';
@@ -222,6 +223,15 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             label: LbStrings.orders,
             onTap: () => unawaited(lbOpenUrl(LbConfig.siteLink('order'))),
           ),
+          if (session.hasJwt)
+            _MeRow(
+              label: LbStrings.announcements,
+              onTap: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LbAnnouncementsPage(),
+                ),
+              ),
+            ),
           _MeRow(
             label: LbStrings.tutorial,
             onTap: () => unawaited(lbOpenUrl(LbConfig.tutorialUrl)),

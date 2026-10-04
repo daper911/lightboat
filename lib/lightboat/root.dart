@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/lightboat/config.dart';
+import 'package:fl_clash/lightboat/pages/announcements.dart';
 import 'package:fl_clash/lightboat/pages/home.dart';
 import 'package:fl_clash/lightboat/pages/login.dart';
 import 'package:fl_clash/lightboat/pages/logo.dart';
@@ -68,12 +69,17 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
+  Future<void> _runStartupPrompts() async {
+    await lbCheckForUpdate(context);
+    if (mounted) await lbShowPopupAnnouncement(context, ref);
+  }
+
   /// Startup prompts wait for the home page so they never cover the login.
   void _showStartupPrompts() {
     if (_promptsShown) return;
     _promptsShown = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) unawaited(lbCheckForUpdate(context));
+      if (mounted) unawaited(_runStartupPrompts());
     });
   }
 

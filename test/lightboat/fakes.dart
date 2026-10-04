@@ -34,6 +34,12 @@ class FakePanelApi extends PanelApi {
     return 'jwt';
   }
 
+  List<LbAnnouncement> announcementList = const [];
+
+  @override
+  Future<List<LbAnnouncement>> announcements(String jwt) async =>
+      announcementList;
+
   List<LbSubscription> subscriptionList = const [];
   int? subscriptionsError;
 

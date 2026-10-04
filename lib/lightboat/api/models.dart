@@ -188,3 +188,46 @@ Uint8List _decodeDataUri(String value) {
   final comma = value.indexOf(',');
   return base64Decode(comma >= 0 ? value.substring(comma + 1) : value);
 }
+
+class LbAnnouncement {
+  final int id;
+  final String title;
+
+  /// Markdown as written in the panel.
+  final String content;
+  final bool pinned;
+  final bool popup;
+
+  /// Milliseconds since epoch.
+  final int createdAt;
+
+  const LbAnnouncement({
+    required this.id,
+    required this.title,
+    required this.content,
+    this.pinned = false,
+    this.popup = false,
+    this.createdAt = 0,
+  });
+
+  /// Hidden ones (`show: false`) are dropped; pinned first, then newest.
+  static List<LbAnnouncement> listFrom(Object? data) {
+    final items = (data as Map?)?['announcements'] as List? ?? const [];
+    return [
+      for (final item in items.cast<Map<String, Object?>>())
+        if (item['show'] != false)
+          LbAnnouncement(
+            id: _int(item['id']),
+            title: item['title'] as String? ?? '',
+            content: item['content'] as String? ?? '',
+            pinned: item['pinned'] == true,
+            popup: item['popup'] == true,
+            createdAt: _int(item['created_at']),
+          ),
+    ]..sort(
+      (a, b) => a.pinned != b.pinned
+          ? (a.pinned ? -1 : 1)
+          : b.createdAt.compareTo(a.createdAt),
+    );
+  }
+}
