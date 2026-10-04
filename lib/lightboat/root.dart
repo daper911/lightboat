@@ -6,6 +6,7 @@ import 'package:fl_clash/lightboat/pages/login.dart';
 import 'package:fl_clash/lightboat/pages/logo.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/theme.dart';
+import 'package:fl_clash/lightboat/trust.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,6 +16,7 @@ import 'package:material_ui/material_ui.dart';
 /// which Lightboat answers on the user's behalf: FlClash's disclaimer and
 /// Crashlytics notice do not apply to a build without Firebase.
 Future<void> lightboatPrepare(ProviderContainer container) async {
+  lbTrustBundledRoots();
   container
       .read(appSettingProvider.notifier)
       .update(

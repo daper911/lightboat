@@ -6,6 +6,7 @@
 #
 # The lb-android volume keeps ~/.android/debug.keystore, so every development build is signed with the same
 # key and installs over the previous one. Files the container writes are handed back to the calling user.
+# Native-asset build hooks run cargo without RUSTUP_HOME, so ~/.rustup has to point at the image's toolchains.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 tty=()
@@ -16,4 +17,4 @@ exec sudo docker run --rm "${tty[@]}" \
   -v lb-go:/root/go -v lb-cargo:/root/.cargo/registry \
   -v lb-android:/root/.android \
   lightboat-env \
-  bash -lc "$*; rc=\$?; chown -R $(id -u):$(id -g) /work; exit \$rc"
+  bash -lc "ln -sfn /opt/rustup /root/.rustup; $*; rc=\$?; chown -R $(id -u):$(id -g) /work; exit \$rc"

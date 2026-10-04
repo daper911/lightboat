@@ -67,6 +67,7 @@
 | 滑块验证码 | 面板返回 `110001` 时：`GET /v1/common/captcha/slide` → 拖动 → `POST /v1/common/captcha/slide/verify {id, x, y}` → `ticket` → 带 `captcha_ticket` 重试。每张图只能提交一次，误差 5 像素，最少 0.4 秒 |
 | 登录失效 | 40002–40005：只清 JWT，**不断开连接**；订阅 token 仍然可用 |
 | 限流 | HTTP 429 + `{"code":401}`；不要激进重试 |
+| 内置根证书 | `lib/lightboat/trust.dart` 内置 ISRG Root X1 / X2，因为全新 Windows 可能没有面板证书的根证书。**面板或订阅域名换证书机构（不再是 Let's Encrypt）时，要先把新的根证书加进这个文件** |
 | 品牌色 | 主色 `#006C6C`（深色模式 `#65BCB7`），背景 `#FAF6EE` / `#08131A`，朱砂 `#C5372F`（Logo 与警示） |
 | 工具链 | Flutter 3.47.4、Go 1.26.4、JDK 17、compileSdk 37、NDK 28.2.13676358、Rust stable |
 | Windows 安装包 AppId | `{E45C3C6D-2F4C-4941-94D7-12924C55563A}`，**首次对外发布后永不修改** |

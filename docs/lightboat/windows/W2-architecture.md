@@ -46,6 +46,7 @@ W0 要在真机上确认的行为。「代码推断」是 2026-10-04 读 FlClash
 | 卸载清理 | `inno_setup.iss` 卸载时只注销后台服务、`taskkill /f` 结束进程：**不恢复系统代理**（强制结束不会走程序的清理），**不删除开机自启项**（`launch_at_startup` 写在 `HKCU\…\Run`）。预计 W-I5 不通过，W1 补卸载脚本 | 待测（W-I5） |
 | 数据目录 | `getApplicationSupportDirectory()` = `%APPDATA%\<CompanyName>\<ProductName>`，取自 `windows/runner/Runner.rc`，目前是 `%APPDATA%\com.follow\clash`（**与正版 FlClash 相同**）。W1 改 `Runner.rc` 后路径会变；首次对外发布前改，不影响用户 | 待测 |
 | 凭据存储 | `flutter_secure_storage` 的 Windows 实现：用系统 DPAPI 加密，文件存在上面的数据目录里 | 待测（W-A5） |
+| 根证书 | 面板和订阅域名的证书链止于 ISRG Root X2（Let's Encrypt）。Windows 只在自己的系统组件需要时才下载缺少的根证书，Dart 却只读系统里已有的；全新的 Windows（例如云服务器）上没有 X2，App 登录就报「网络连接失败」。已修：`lib/lightboat/trust.dart` 在启动时内置 ISRG Root X1、X2（两个平台都加，不分支） | 2026-10-04 运营方在 AWS 全新 Windows Server 上复现（`certutil -store root` 里没有 ISRG，`Test-NetConnection` 通）；修复包待测 |
 
 ## 3. 代码组织：共用代码 + 两个外壳
 
