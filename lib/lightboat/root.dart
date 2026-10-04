@@ -6,6 +6,7 @@ import 'package:fl_clash/lightboat/pages/announcements.dart';
 import 'package:fl_clash/lightboat/pages/home.dart';
 import 'package:fl_clash/lightboat/pages/login.dart';
 import 'package:fl_clash/lightboat/pages/logo.dart';
+import 'package:fl_clash/lightboat/pages/plan_reminder.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/theme.dart';
 import 'package:fl_clash/lightboat/trust.dart';
@@ -71,7 +72,10 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
 
   Future<void> _runStartupPrompts() async {
     await lbCheckForUpdate(context);
-    if (mounted) await lbShowPopupAnnouncement(context, ref);
+    if (!mounted) return;
+    final subscription = ref.read(lbSessionProvider).subscription;
+    if (await lbRemindPlan(context, subscription) || !mounted) return;
+    await lbShowPopupAnnouncement(context, ref);
   }
 
   /// Startup prompts wait for the home page so they never cover the login.
