@@ -307,13 +307,20 @@ class _MeRow extends StatelessWidget {
                 ),
               ),
             ),
-            if (trailing != null)
-              Text(
-                trailing!,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: colors.muted,
+            if (trailing != null) ...[
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  trailing!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.end,
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: colors.muted,
+                  ),
                 ),
               ),
+            ],
             if (color == null)
               GlyphIcon(AppGlyphs.chevronForward, color: colors.muted),
           ],
