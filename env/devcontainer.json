@@ -1,0 +1,21 @@
+{
+  // VS Code "Dev Containers": copy to .devcontainer/devcontainer.json in the repo, then "Reopen in Container".
+  // Needs docker without sudo for this account (sudo usermod -aG docker ubuntu, then log in again).
+  // Same image as the command-line builds (env/Dockerfile), so the editor and the builds agree.
+  "name": "Lightboat Android",
+  "build": { "dockerfile": "../env/Dockerfile", "context": "../env" },
+  "workspaceFolder": "/work",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/work,type=bind",
+  "mounts": [
+    "source=lb-gradle,target=/root/.gradle,type=volume",
+    "source=lb-pub,target=/root/.pub-cache,type=volume",
+    "source=lb-go,target=/root/go,type=volume",
+    "source=lb-cargo,target=/root/.cargo/registry,type=volume"
+  ],
+  "customizations": {
+    "vscode": {
+      "extensions": ["Dart-Code.dart-code", "Dart-Code.flutter"],
+      "settings": { "dart.flutterSdkPath": "/opt/flutter" }
+    }
+  }
+}
