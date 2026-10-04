@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/lightboat/config.dart';
 import 'package:fl_clash/lightboat/pages/home.dart';
 import 'package:fl_clash/lightboat/pages/login.dart';
@@ -25,6 +26,7 @@ Future<void> lightboatPrepare(ProviderContainer container) async {
           crashlyticsTip: true,
           crashlytics: false,
           autoCheckUpdate: false,
+          openLogs: true,
         ),
       );
   container
@@ -39,7 +41,9 @@ Future<void> lightboatPrepare(ProviderContainer container) async {
   final userAgent = LbConfig.userAgent(globalState.packageInfo.version);
   container
       .read(patchClashConfigProvider.notifier)
-      .update((state) => state.copyWith(globalUa: userAgent));
+      .update(
+        (state) => state.copyWith(globalUa: userAgent, logLevel: LogLevel.info),
+      );
   final session = container.read(lbSessionProvider.notifier);
   await session.restore();
   unawaited(session.refresh());

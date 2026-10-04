@@ -57,6 +57,10 @@ abstract final class LbStrings {
   static const tutorial = '使用教程';
   static const support = '联系客服';
   static const orders = '订单与钱包';
+  static const exportLogs = '导出日志';
+  static const exportLogsDone = '日志已保存。联系客服时把这个文件发过去';
+  static const exportLogsFailed = '导出日志失败，请稍后再试';
+  static const logsHeading = '—— 日志（token、密码、订阅地址已打码）——';
   static const about = '关于';
   static const logout = '退出登录';
   static const logoutConfirm = '退出后会断开连接，并清除本机保存的登录信息。';

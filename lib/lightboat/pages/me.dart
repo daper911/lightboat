@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/lightboat/config.dart';
+import 'package:fl_clash/lightboat/diagnostics.dart';
 import 'package:fl_clash/lightboat/pages/apps.dart';
 import 'package:fl_clash/lightboat/pages/home.dart';
 import 'package:fl_clash/lightboat/pages/login.dart';
@@ -75,6 +76,21 @@ class _LbMePageState extends ConsumerState<LbMePage> {
       (item) => item.id == chosen,
     );
     await ref.read(lbSessionProvider.notifier).selectSubscription(subscription);
+  }
+
+  Future<void> _exportLogs() async {
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      if (!await lbExportLogs(ref)) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text(LbStrings.exportLogsDone)),
+      );
+    } catch (error) {
+      commonPrint.log('lightboat export logs: $error');
+      messenger.showSnackBar(
+        const SnackBar(content: Text(LbStrings.exportLogsFailed)),
+      );
+    }
   }
 
   void _showAbout() {
@@ -213,6 +229,10 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             label: LbStrings.support,
             trailing: LbConfig.supportEmail,
             onTap: () => unawaited(lbOpenUrl(LbConfig.ticketUrl)),
+          ),
+          _MeRow(
+            label: LbStrings.exportLogs,
+            onTap: () => unawaited(_exportLogs()),
           ),
           _MeRow(
             label: LbStrings.about,
