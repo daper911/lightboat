@@ -1,8 +1,8 @@
-# 轻舟安卓客户端（Lightboat Android）
+# 轻舟客户端（Lightboat：Android + Windows）
 
-为「轻舟」VPN 服务开发的自有安卓 App：用户用轻舟账号登录，点一个按钮就能连上，不需要知道订阅链接、客户端、协议这些概念。
+为「轻舟」VPN 服务开发的自有客户端，**同一套代码分别构建 Android 和 Windows**：用户用轻舟账号登录，点一个按钮就能连上，不需要知道订阅链接、客户端、协议这些概念。
 
-这里是轻舟为安卓客户端写的全部文档（2026-10-04 编写），在代码仓库中位于 `docs/lightboat/`。代码仓库按 [04-dev-environment.md](04-dev-environment.md) 创建。
+这里是轻舟客户端的全部文档（2026-10-04 编写），在代码仓库 `daper911/lightboat` 中位于 `docs/lightboat/`。01–09 以安卓为主，其中与平台无关的部分（面板接口、品牌、项目现状）两个平台共用；Windows 特有的内容在 [windows/](windows/README.md)。
 
 ## 文档
 
@@ -18,6 +18,7 @@
 | [07-milestones.md](07-milestones.md) | 所有人 | 里程碑、工作量、每一步的验收标准 |
 | [08-brand-and-ui.md](08-brand-and-ui.md) | 开发 / 设计 | 品牌：名称、Logo、配色（十六进制）、字体、界面草图、文案 |
 | [09-project-context.md](09-project-context.md) | 所有人 | 轻舟项目现状：面板、节点、域名、支付、安全，与 App 相关的部分 |
+| [windows/](windows/README.md) | 所有人 | **Windows 版**：需求、架构、宽屏界面、云端构建、测试、里程碑（W1–W6） |
 | [env/](../../env/)（仓库根目录） | 开发 | 构建环境的 Dockerfile 与 VS Code 开发容器配置（草稿，第一次搭建时验证） |
 
 ## 一句话方案

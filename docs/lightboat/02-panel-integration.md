@@ -14,7 +14,7 @@
 | 时间 | 毫秒时间戳（`expire_time`、`created_at` 等）；订阅响应头里的 `expire` 是**秒** |
 | 流量 | 字节 |
 | 金额 | 分（整数），币种 CNY |
-| User-Agent | App 统一使用 `Lightboat-Android/<版本号> (Clash.Meta)`，**必须包含 `clash`**（不区分大小写），原因见 §5 |
+| User-Agent | App 统一使用 `Lightboat-<平台>/<版本号> (Clash.Meta)`，平台为 `Android` 或 `Windows`（W1 起），**必须包含 `clash`**（不区分大小写），原因见 §5 |
 
 ## 2. 接口清单（App 用到的）
 
@@ -245,7 +245,7 @@ User-Agent: Lightboat-Android/0.1.0 (Clash.Meta)
 
 | # | 事项 | 何时需要 |
 |---|---|---|
-| 1 | **APK 与 `latest.json` 的托管**：比如 `https://ssr.cnbetx.com/downloads/android/`（web 容器的静态目录，或 R2），网站「连接设备」的安卓下载按钮指向它 | 第一次内测分发前 |
+| 1 | **APK、Windows 安装包与 `latest.json` 的托管**：比如 `https://ssr.cnbetx.com/downloads/{android,windows}/`（web 容器的静态目录，或 R2），网站「连接设备」的安卓 / Windows 下载按钮指向它；`latest.json` 含 android 与 windows 两段（[05 §4](05-build-and-release.md)、[windows/W4 §6](windows/W4-build-and-ci.md)）。运营方 2026-10-04 决定网站客户端下载暂时搁置 | 第一次对外分发前 |
 | 2 | 延长 JWT 有效期（例如 30 天），或者给 App 提供 refresh token | 体验优化，不阻塞 |
 | 3 | 备用面板地址（另一个域名，最好走 CDN）与远程地址列表（见 [03 §5](03-architecture.md)） | 正式发布前 |
 | 4 | 面板托管规则集，摆脱对 cdn.jsdmirror.com 的依赖 | 可选 |

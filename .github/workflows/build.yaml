@@ -106,13 +106,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Lightboat ships Android and Windows only, so the Linux and macOS debug
+        # builds are dropped (docs/lightboat/upstream-patches.md, 构建).
         include:
-          - platform: linux
-            os: ubuntu-latest
           - platform: windows
             os: windows-2022
-          - platform: macos
-            os: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4

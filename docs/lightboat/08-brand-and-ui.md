@@ -151,3 +151,5 @@ Logo 的 SVG 源码（可以直接转成 Android 矢量图）：
 | 新版本 | 发现新版本 1.1.0 · 立即更新 |
 
 网站已有的中英文文案在 `vpn/frontend/apps/user/public/assets/locales/{zh-CN,en-US}/*.json`，可以参考用词保持一致。
+
+Windows 宽屏桌面布局（侧边栏、标题栏、托盘）见 [windows/W3](windows/W3-desktop-ui.md)。

@@ -3,10 +3,10 @@
 # Toolchain versions follow FlClash's release CI (.github/workflows/build.yaml, android/gradle/libs.versions.toml);
 # when you merge a newer FlClash, re-check them there.
 #
-#   sudo docker build -t lightboat-android-env -f env/Dockerfile env/
+#   sudo docker build -t lightboat-env -f env/Dockerfile env/
 #   sudo docker run --rm -it -v "$PWD":/work -w /work \
 #     -v lb-gradle:/root/.gradle -v lb-pub:/root/.pub-cache -v lb-go:/root/go -v lb-cargo:/root/.cargo/registry \
-#     lightboat-android-env bash -lc 'flutter pub get && dart setup.dart android --arch arm64'
+#     lightboat-env bash -lc 'flutter pub get && dart setup.dart android --arch arm64'
 FROM ubuntu:24.04
 
 ARG FLUTTER_VERSION=3.47.4

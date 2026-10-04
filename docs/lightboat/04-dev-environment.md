@@ -23,7 +23,7 @@
 2. 可见性：Fork 公开仓库默认就是公开的。GPL-3.0 要求**对外分发 APK 时公开对应源码**，所以公开没有问题。如果开发期间不想公开：先不 Fork，改为在 GitHub 新建一个空的私有仓库 `lightboat-android`，再告诉 AI「用导入方式创建」（AI 会把 FlClash 的代码推进去）。
 3. 告诉 AI 仓库已经建好。
 
-> 2026-10-04 实际采用的是私有仓库 + 导入方式：`origin` 是 `git@github.com:daper911/lightboat-android.git`，`upstream` 是 FlClash。对外分发 APK 之前要把仓库改为公开（05 §6）。
+> 2026-10-04 实际采用的是导入方式：`upstream` 是 FlClash。仓库当天下午变为公开；同日整合为安卓 + Windows 共用仓库，改名为 **`daper911/lightboat`**（`origin` 为 `git@github.com:daper911/lightboat.git`），本机目录改为 `/home/ubuntu/projects/lightboat`。下面第 1、2 节是当初的建仓步骤，保留作记录。
 
 ## 2. 克隆到本机（AI 来做）
 
@@ -56,8 +56,8 @@ rm -rf ../lightboat-android-docs     # 确认文档已在新仓库里之后再�
 - 缓存目录都挂成 Docker 卷，避免每次重新下载：Gradle（`~/.gradle`）、pub（`~/.pub-cache`）、Go（`~/go/pkg/mod`）、Cargo（`~/.cargo/registry`）。
 
 ```bash
-cd /home/ubuntu/projects/lightboat-android
-sudo docker build -t lightboat-android-env -f env/Dockerfile env/
+cd /home/ubuntu/projects/lightboat
+sudo docker build -t lightboat-env -f env/Dockerfile env/
 ```
 
 实测（2026-10-04）：镜像约 3.3 GB，构建约 10 分钟。
@@ -74,12 +74,12 @@ env/run.sh dart setup.dart android --arch arm64
 ## 4. 第一次构建 APK
 
 ```bash
-cd /home/ubuntu/projects/lightboat-android
+cd /home/ubuntu/projects/lightboat
 sudo docker run --rm -it \
   -v "$PWD":/work -w /work \
   -v lb-gradle:/root/.gradle -v lb-pub:/root/.pub-cache \
   -v lb-go:/root/go -v lb-cargo:/root/.cargo/registry \
-  lightboat-android-env \
+  lightboat-env \
   bash -lc 'flutter pub get && dart setup.dart android --arch arm64'
 # 产物：dist/*.apk
 ```
@@ -133,3 +133,7 @@ dart setup.dart android --arch arm64                         # 打包
 ```
 
 具体以 FlClash 仓库 `.agents/commands.md` 为准。
+
+## Windows：用 GitHub Actions 构建
+
+Windows 程序不能在这台 Linux 服务器上编译。本机只做 `env/run.sh flutter analyze` 和 `env/run.sh flutter test`；推送后由 GitHub Actions 的 `lightboat-windows` 流程构建安装包，运营方下载到自己的 Windows 电脑上测试。详见 [windows/W4](windows/W4-build-and-ci.md) 与 [windows/W5](windows/W5-testing.md)。

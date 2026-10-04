@@ -15,5 +15,5 @@ exec sudo docker run --rm "${tty[@]}" \
   -v lb-gradle:/root/.gradle -v lb-pub:/root/.pub-cache \
   -v lb-go:/root/go -v lb-cargo:/root/.cargo/registry \
   -v lb-android:/root/.android \
-  lightboat-android-env \
+  lightboat-env \
   bash -lc "$*; rc=\$?; chown -R $(id -u):$(id -g) /work; exit \$rc"

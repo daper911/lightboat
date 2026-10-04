@@ -35,6 +35,8 @@ keyPassword=...
 
 ## 2. 版本号
 
+> Android 与 Windows **共用**这个版本号（一套代码，一个版本号），见 [windows/W4 §4](windows/W4-build-and-ci.md)。
+
 - `versionName` 用语义化版本：`0.1.0`（原型）→ `0.x`（内测）→ `1.0.0`（正式发布）；
 - `versionCode` 单调递增的整数，**每次发出去的包都必须比上一次大**，否则手机拒绝覆盖安装；
 - 版本号写在 `pubspec.yaml` 的 `version: 0.1.0+1`（`+` 后面是 versionCode）；
@@ -85,6 +87,8 @@ https://ssr.cnbetx.com/downloads/android/
 网站「连接设备 → Android」的推荐客户端改成「轻舟 App」，并在显眼位置给出安装引导：允许安装未知来源应用、首次连接的 VPN 授权、保活设置。
 
 ## 5. 发布流程（每个版本）
+
+> Windows 产物由标签触发云端构建并创建 GitHub Release，APK 附加到同一个 Release；Windows 部分见 [windows/W4 §6](windows/W4-build-and-ci.md)。`latest.json` 增加 windows 段，结构在首次发布 Windows 前与本节一起定稿。
 
 1. 在主分支确认 [06](06-testing.md) 的回归用例都通过；
 2. 修改 `pubspec.yaml` 的版本号，写更新说明；

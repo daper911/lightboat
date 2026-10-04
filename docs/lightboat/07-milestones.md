@@ -14,7 +14,7 @@
 ## 第一步之前
 
 - [ ] 运营方确认 [01 §10](01-product-requirements.md) 中的 App 名称和**包名**（M1 就要用；正式发布后不能改）；
-- [x] 建仓库（2026-10-04：私有仓库 `daper911/lightboat-android`，导入方式，见 [04 §1](04-dev-environment.md)）；
+- [x] 建仓库（2026-10-04：`daper911/lightboat-android`，导入方式，见 [04 §1](04-dev-environment.md)；同日改名 `daper911/lightboat`，与 Windows 共用）；
 - [ ] 准备至少一台安卓真机，打开「允许安装未知来源应用」。
 
 ## 原型阶段（M0 + M1，1–2 天）的意义
@@ -23,6 +23,6 @@
 
 ## 第二期（不在本次范围）
 
-- 桌面版（Windows / macOS / Linux），约 1–2 周；
+- 桌面版：**Windows 已纳入**（2026-10-04），里程碑见 [windows/W6](windows/W6-milestones.md)；macOS / Linux 以后；
 - App 内原生注册、WebView 付款、邀请返利；
 - 面板托管规则集、远程地址列表（需要主项目配合）。

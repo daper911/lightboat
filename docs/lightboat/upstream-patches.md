@@ -30,9 +30,18 @@
 | `android/app/src/main/res/values*/styles.xml`（四个） | 启动窗口与 Flutter 底色改为宣纸色 `@color/lb_paper`；安卓 12+ 启动页：宣纸底 + 朱砂圆底白色小舟（`windowSplashScreenIconBackgroundColor`） | 品牌；避免启动时闪白 / 闪黑、整屏朱砂 | 颜色定义在轻舟新增的 `values/lightboat_colors.xml`、`values-night/lightboat_colors.xml` |
 | `android/service/src/main/res/drawable/ic.xml`、`ic_service.xml` | 换成白色小舟线条 | 通知栏小图标、快捷开关图标（08 §2） | FlClash 的 `.agents/commands.md` 说它们来自 `glyph.svg`，我们不再跟随那个来源 |
 
+## Windows
+
+W1 起往这里登记对 FlClash Windows 端文件的改动（计划见 [windows/W2 §5](windows/W2-architecture.md)）。
+
+| 文件 | 改动 | 原因 | 合并上游时注意 |
+|---|---|---|---|
+
 ## 构建
 
 | 文件 | 改动 | 原因 |
 |---|---|---|
+| `.github/workflows/build.yaml` | `desktop` 任务的矩阵只留 `windows`，去掉 Linux、macOS | 轻舟只出安卓和 Windows；省掉每次推送两台无关的云主机构建。上游改动该矩阵时保留只有 windows 这一项 |
+| `.github/workflows/lightboat-windows.yml`（新增） | 轻舟自己的 Windows 构建与发布流程 | 见 [windows/W4](windows/W4-build-and-ci.md)。上游升级 Flutter / Go 版本时同步这里的 `FLUTTER_VERSION`、`GO_VERSION` |
 | `tool/check_coverage.dart` | `_groupFloors` 新增 `'lightboat': 86.0` | CI 要求每个代码组都登记覆盖率下限；轻舟代码 2026-10-04 实测 88.5% | 上游调整这张表时保留这一行 |
 | `.gitignore` | `docs/` 改为 `docs/*` + `!docs/lightboat/`；新增 `*.jks`、`key.properties` | 提交轻舟文档；签名证书不进 git |
