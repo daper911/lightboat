@@ -8,6 +8,7 @@ import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
 import 'package:fl_clash/lightboat/auth/credential_store.dart';
 import 'package:fl_clash/lightboat/config.dart';
+import 'package:fl_clash/lightboat/rules.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -263,6 +264,10 @@ class LbSession extends Notifier<LbSessionState> {
     }
   }
 
+  Future<void> _seedRuleSets(int profileId) async => lbSeedRuleSets(
+    await appPath.getProviderDirPath(profileId, rulesProviderDirectoryName),
+  );
+
   Future<void> _syncProfile(LbSubscription subscription) async {
     final url = (await _siteConfig()).subscribeUrl(subscription.token);
     await _waitForCore();
@@ -276,8 +281,10 @@ class LbSession extends Notifier<LbSessionState> {
             selectedMap: lbSelectedMap(const {}),
           )
           .update(validate: (path) => _core.validateConfig(path));
+      await _seedRuleSets(profile.id);
       profilesAction.putProfile(profile);
     } else {
+      await _seedRuleSets(existing.id);
       await profilesAction.updateProfile(
         existing.copyWith(
           url: url,

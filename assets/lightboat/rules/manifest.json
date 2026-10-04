@@ -1,0 +1,102 @@
+[
+ {
+  "name": "Apple",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Apple/Apple_Classical_No_Resolve.yaml",
+  "file": "a258c057d19032da022486dd8a1a88e3.gz"
+ },
+ {
+  "name": "Google",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Google/Google_No_Resolve.yaml",
+  "file": "29f625e5f48d23d06d4de3f98b858817.gz"
+ },
+ {
+  "name": "Microsoft",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Microsoft/Microsoft.yaml",
+  "file": "7f35943e2293b8b2b690dc2db3df3f1b.gz"
+ },
+ {
+  "name": "Github",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/GitHub/GitHub.yaml",
+  "file": "49e5207d4dd1098cd24a0d424847692d.gz"
+ },
+ {
+  "name": "HBO",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/HBO/HBO.yaml",
+  "file": "fbf229f55cadc710547fec5ce61c4426.gz"
+ },
+ {
+  "name": "Disney",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Disney/Disney.yaml",
+  "file": "64792fad62034ed38b14686a30c7de82.gz"
+ },
+ {
+  "name": "TikTok",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/TikTok/TikTok.yaml",
+  "file": "edf4756dec5d21a248651213342e00b1.gz"
+ },
+ {
+  "name": "Netflix",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Netflix/Netflix.yaml",
+  "file": "8256d01cd90d78d1c17ece5b01014ffb.gz"
+ },
+ {
+  "name": "GlobalMedia",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/GlobalMedia/GlobalMedia_Classical_No_Resolve.yaml",
+  "file": "71bfb0785ac66fd802011a67c71f2051.gz"
+ },
+ {
+  "name": "Telegram",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Telegram/Telegram_No_Resolve.yaml",
+  "file": "21b9785cb2fd40f331876a2e34199491.gz"
+ },
+ {
+  "name": "OpenAI",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/OpenAI/OpenAI.yaml",
+  "file": "b1e05971685b9d5e3f11046f634e11b5.gz"
+ },
+ {
+  "name": "Gemini",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Gemini/Gemini.yaml",
+  "file": "4c9a7ae615461a108a4b70c3dfbaff58.gz"
+ },
+ {
+  "name": "Copilot",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Copilot/Copilot.yaml",
+  "file": "27963c98f9d1e64c4069e312c6dee347.gz"
+ },
+ {
+  "name": "Claude",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Claude/Claude.yaml",
+  "file": "2f80329acefa0515a2dea5a26fb6b0cc.gz"
+ },
+ {
+  "name": "Crypto",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Crypto/Crypto.yaml",
+  "file": "b92d4d247c6738f26ac3230c4152117c.gz"
+ },
+ {
+  "name": "Cryptocurrency",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Cryptocurrency/Cryptocurrency.yaml",
+  "file": "471a55902535596c4a09a8eb0e6407ac.gz"
+ },
+ {
+  "name": "Game",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Game/Game.yaml",
+  "file": "7050148abd67a70206c07c9132d9c210.gz"
+ },
+ {
+  "name": "Global",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Global/Global_Classical_No_Resolve.yaml",
+  "file": "19ac1527682296f7f1122b14add37e4b.gz"
+ },
+ {
+  "name": "ChinaMax",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/ChinaMax/ChinaMax_Classical_No_Resolve.yaml",
+  "file": "ef7314f693765cc1a821cd6c9d8dd91c.gz"
+ },
+ {
+  "name": "Lan",
+  "url": "https://cdn.jsdmirror.com/gh/perfect-panel/rules/rule/Clash/Lan/Lan.yaml",
+  "file": "e4158a28c8cf3dce0fb5e0ff2ba8f927.gz"
+ }
+]

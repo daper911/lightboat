@@ -16,9 +16,7 @@ final _redactions = <(RegExp, String Function(Match))>[
   (RegExp(r'eyJ[\w-]+\.[\w-]+\.[\w-]+'), (_) => '<jwt>'),
   (RegExp(r'(token=)[^&\s"]+', caseSensitive: false), (m) => '${m[1]}<token>'),
   (
-    RegExp(
-      r'("?(?:password|token|uuid|captcha_ticket)"?\s*:\s*)"?[^",}\s]+"?',
-    ),
+    RegExp(r'("?(?:password|token|uuid|captcha_ticket)"?\s*:\s*)"?[^",}\s]+"?'),
     (m) => '${m[1]}<hidden>',
   ),
   (

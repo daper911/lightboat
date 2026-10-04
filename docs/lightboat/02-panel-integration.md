@@ -167,7 +167,10 @@ User-Agent: Lightboat-Android/0.1.0 (Clash.Meta)
   - **首页的「线路」= `🚀 Proxy` 分组**：默认选 `🌏 Auto`；用户手动选节点，就是把 `🚀 Proxy` 切到具体节点。按应用分流的分组（`🔍 Google`、`📟 Telegram`、`🐠 Final` 等）第一个选项都是 `🚀 Proxy`，所以默认跟着线路走（2026-10-05 核对主项目 `deploy/templates/clash.gotmpl`）。
   - 线路列表**不显示**最终走直连的选项（`🎯 Direct`，以及类型为 Direct / Reject 的项），见 `lbLineChoices`。
   - **全局模式**：订阅里没有 `GLOBAL` 分组，mihomo 会自动生成一个，第一个选项是 `DIRECT`（`config/config.go`）。App 在配置的已选记录里把 `GLOBAL` 固定为 `🚀 Proxy`（`lbSelectedMap`），切到全局时若内核里还不是，就立即改过来。0.3.0 及以前没有这一步，「全局」实际是全部直连（2026-10-05 运营方在国内的 Windows 上遇到：测速正常、浏览器和 Telegram 打不开）。
-- 规则集（`rule-providers`）从 **`cdn.jsdmirror.com`**（国内可访问的 jsDelivr 镜像）下载，共 20 个。这是外部依赖：镜像挂了，规则就加载不了。**建议 App 内置一份规则集作为兜底**，或者以后由面板托管规则集。
+- 规则集（`rule-providers`）从 **`cdn.jsdmirror.com`**（国内可访问的 jsDelivr 镜像）下载，共 20 个，合计 5.3 MB。内核第一次加载配置时要全部下载完才回应，网络慢就会超时（2026-10-04 在 AWS Windows 上出现「Core did not answer setupConfig」）。
+  - **App 内置了一份**（`assets/lightboat/rules/`，gzip 后约 0.8 MB）：创建或刷新配置时，`lbSeedRuleSets` 把缺少的规则文件放到 FlClash 为每个规则集指定的路径（`profiles/providers/<配置 ID>/rules/md5(名字@地址)`），并把修改时间设为 2000 年，内核先用本地文件、再立刻在后台更新。已有的文件不覆盖。
+  - **面板模板的规则集名字或地址变了，要重新打包**：`python3 tool/lightboat/bundle_rules.py`（默认读主项目的 `deploy/templates/clash.gotmpl`）。不重新打包也不会出错，只是那几个规则集退回到首次下载。
+  - 以后可以由面板托管规则集（02 §9 第 4 条），摆脱对镜像的依赖。
 - 配置里的 `tun`、`dns`、`mixed-port`、`external-controller` 等设置，FlClash 会按自己的 VPN 实现覆盖掉，沿用 FlClash 的处理即可。
 
 订阅更新频率：启动时更新一次，之后每 6 小时一次。面板对订阅接口按 IP 限流（30 次/分钟），正常使用碰不到。
