@@ -21,7 +21,6 @@ abstract final class LbConfig {
   static String siteLink(String route) => '${panelUrls.first}/#/$route';
 
   static final registerUrl = siteLink('auth');
-  static final purchaseUrl = siteLink('subscribe');
   static final tutorialUrl = siteLink('document');
   static final ticketUrl = siteLink('ticket');
   static final tosUrl = siteLink('tos');

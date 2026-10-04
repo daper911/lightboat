@@ -13,6 +13,7 @@
 | `pubspec.yaml` | `version` 改为轻舟自己的版本号（`0.1.0+1` 起，规则见 05 §2） | 版本号与 UA 都取自这里 | 合并上游时保留我们的 `version` 行 |
 | `lib/common/picker.dart`、`lib/providers/actions/profiles.dart`、`lib/views/profiles/add.dart`、`lib/pages/pages.dart`；删除 `lib/pages/scan.dart`、`test/pages/scan_test.dart`；`test/views/add_profile_view_test.dart` 改为断言没有扫码入口 | 删除「扫二维码导入配置」（`pickerConfigQRCode`、`addProfileFormQrCode`、`ScanPage`、添加配置页的扫码入口） | 扫码依赖的 Google ML Kit 自带 Google 数据上报组件（datatransport），与「不集成统计」冲突；轻舟界面也用不到（运营方 2026-10-04 决定删除） | 上游改动扫码相关代码时直接丢弃；`lib/common/link.dart` 的 `profileUrlFromQrCodes` 保留未动，现在只有测试在用 |
 | `pubspec.yaml` | 删除 `mobile_scanner`、`image_picker`；`fonts:` 新增 `LightboatSerif`（`assets/fonts/LightboatSerif.ttf`，许可证 `LightboatSerif-OFL.txt`） | 同上；品牌标题字体（08 §4）：网站「轻舟宋」子集再裁到只含「轻舟已过万重山」，2.8 KB | |
+| `pubspec.yaml` | 新增依赖 `qr`（纯 Dart） | App 内付款页画 USDT 收款二维码 | |
 | `pubspec.yaml`、`pubspec.lock`，以及 `flutter pub get` 重新生成的 `linux/`、`macos/`、`windows/` 插件注册文件 | 新增依赖 `flutter_secure_storage` | JWT 与订阅 token 存进 Android Keystore 加密存储（01 §7） | 生成文件冲突时直接重新 `flutter pub get`；第二期做 Linux 桌面版时要装 `libsecret-1-dev` |
 
 ## Android

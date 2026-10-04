@@ -94,6 +94,22 @@ Content-Type: application/json
 
 **订阅地址的拼法**（与网站一致）：`https://<subscribe_domain 第一行><subscribe_path>?token=<token>`。
 
+### 2.6 注册、购买与付款（2026-10-04 按网站源码核对）
+
+| 用途 | 方法与路径 | 说明 |
+|---|---|---|
+| 发注册验证码 | `POST /v1/common/send_code {email, type: 1, captcha_ticket}` | 必须先过滑块；60 秒一次（`verify_code.verify_code_interval`） |
+| 注册 | `POST /v1/auth/register {email, password, code, invite?, captcha_ticket?}` | 成功直接返回 `data.token`（JWT）；返回 110001 时过滑块重试 |
+| 套餐列表 | `GET /v1/public/subscribe/list` | 需要登录；只展示 `sell && show`；`discount[]` 是 `{quantity, discount}`，discount 为折后百分比 |
+| 支付方式 | `GET /v1/public/portal/payment-method` | `id == -1` 是余额；`platform` 为 `GMPay`、`Cryptomus` 的是加密货币，其余是在线支付（易支付） |
+| 询价 | `POST /v1/public/order/pre {subscribe_id, quantity, payment, user_subscribe_id?}` | 金额以它为准（分） |
+| 新购 | `POST /v1/public/order/purchase {subscribe_id, quantity, payment}` → `order_no` | |
+| 续费 | `POST /v1/public/order/renewal {user_subscribe_id, quantity, payment}` → `order_no` | 只在原套餐仍在售时可用，否则走新购 |
+| 发起支付 | `POST /v1/public/portal/order/checkout {orderNo, returnUrl}` | `type`：`url`（打开 `checkout_url`）、`qr`、`crypto`（`crypto{address, amount, token, network, fiat, currency, expires_at 秒}`）、`balance` |
+| 订单状态 | `GET /v1/public/order/detail?order_no=` | `status`：1 待支付、2 已支付、3 已取消、4 已关闭、5 已完成 |
+
+新增错误码（App 已翻译成中文）：20001 / 90011 邮箱已注册、20005 余额不足、20006 关闭注册、20009 邀请码错误、60002 套餐不可购买、60007 售罄、70001 验证码错误、90015 当日发送次数超限。
+
 ## 3. 错误码
 
 | code | 含义 | App 处理 |

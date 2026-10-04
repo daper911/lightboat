@@ -1,12 +1,22 @@
 import 'package:dio/dio.dart';
+import 'package:fl_clash/lightboat/api/commerce.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/config.dart';
 
 abstract final class LbErrorCode {
   static const rateLimited = 401;
+  static const userExists = 20001;
   static const userNotFound = 20002;
   static const wrongPassword = 20003;
   static const userDisabled = 20004;
+  static const insufficientBalance = 20005;
+  static const registerClosed = 20006;
+  static const inviteCodeInvalid = 20009;
+  static const planUnavailable = 60002;
+  static const planOutOfStock = 60007;
+  static const verifyCodeInvalid = 70001;
+  static const emailExists = 90011;
+  static const sendLimitReached = 90015;
   static const captchaRequired = 110001;
   static const captchaFailed = 110002;
   static const network = -1;
@@ -102,6 +112,7 @@ class PanelApi {
     String method,
     String path, {
     Map<String, Object?>? body,
+    Map<String, Object?>? query,
     String? token,
   }) async {
     final base = await _resolvePanel();
@@ -110,6 +121,7 @@ class PanelApi {
       response = await _dio.request<Object?>(
         '$base$path',
         data: body,
+        queryParameters: query,
         options: Options(method: method, headers: {'Authorization': ?token}),
       );
     } on DioException catch (error) {
@@ -150,6 +162,149 @@ class PanelApi {
             )
             as Map;
     return data['token'] as String;
+  }
+
+  /// Registration codes need a slide captcha ticket on every send.
+  Future<void> sendEmailCode({
+    required String email,
+    required String captchaTicket,
+  }) async {
+    await _call(
+      'POST',
+      '/v1/common/send_code',
+      body: {'email': email, 'type': 1, 'captcha_ticket': captchaTicket},
+    );
+  }
+
+  Future<String> register({
+    required String email,
+    required String password,
+    required String code,
+    String? invite,
+    String? captchaTicket,
+  }) async {
+    final data =
+        await _call(
+              'POST',
+              '/v1/auth/register',
+              body: {
+                'email': email,
+                'password': password,
+                'code': code,
+                'invite': ?invite,
+                'captcha_ticket': ?captchaTicket,
+              },
+            )
+            as Map;
+    return data['token'] as String;
+  }
+
+  Future<List<LbPlan>> plans(String jwt) async => lbSellablePlans(
+    await _call('GET', '/v1/public/subscribe/list', token: jwt),
+  );
+
+  Future<List<LbPaymentMethod>> paymentMethods(String jwt) async {
+    final data =
+        await _call('GET', '/v1/public/portal/payment-method', token: jwt)
+            as Map?;
+    return [
+      for (final item in data?['list'] as List? ?? const [])
+        LbPaymentMethod.fromPanel((item as Map).cast<String, Object?>()),
+    ];
+  }
+
+  /// The server prices every order; the app only shows what comes back.
+  Future<LbQuote> quote(
+    String jwt, {
+    required int planId,
+    required int quantity,
+    required int payment,
+    int? userSubscribeId,
+  }) async {
+    final data =
+        await _call(
+              'POST',
+              '/v1/public/order/pre',
+              token: jwt,
+              body: {
+                'subscribe_id': planId,
+                'quantity': quantity,
+                'payment': payment,
+                'user_subscribe_id': ?userSubscribeId,
+              },
+            )
+            as Map;
+    return LbQuote.fromPanel(data.cast<String, Object?>());
+  }
+
+  Future<String> purchase(
+    String jwt, {
+    required int planId,
+    required int quantity,
+    required int payment,
+  }) async {
+    final data =
+        await _call(
+              'POST',
+              '/v1/public/order/purchase',
+              token: jwt,
+              body: {
+                'subscribe_id': planId,
+                'quantity': quantity,
+                'payment': payment,
+              },
+            )
+            as Map;
+    return data['order_no'] as String;
+  }
+
+  Future<String> renew(
+    String jwt, {
+    required int userSubscribeId,
+    required int quantity,
+    required int payment,
+  }) async {
+    final data =
+        await _call(
+              'POST',
+              '/v1/public/order/renewal',
+              token: jwt,
+              body: {
+                'user_subscribe_id': userSubscribeId,
+                'quantity': quantity,
+                'payment': payment,
+              },
+            )
+            as Map;
+    return '${data['order_no']}';
+  }
+
+  Future<LbOrder> order(String jwt, String orderNo) async {
+    final data =
+        await _call(
+              'GET',
+              '/v1/public/order/detail',
+              token: jwt,
+              query: {'order_no': orderNo},
+            )
+            as Map;
+    return LbOrder.fromPanel(data.cast<String, Object?>());
+  }
+
+  Future<LbCheckout> checkout(
+    String jwt, {
+    required String orderNo,
+    required String returnUrl,
+  }) async {
+    final data =
+        await _call(
+              'POST',
+              '/v1/public/portal/order/checkout',
+              token: jwt,
+              body: {'orderNo': orderNo, 'returnUrl': returnUrl},
+            )
+            as Map;
+    return LbCheckout.fromPanel(data.cast<String, Object?>());
   }
 
   Future<List<LbSubscription>> subscriptions(String jwt) async {

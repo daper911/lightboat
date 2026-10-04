@@ -17,6 +17,9 @@ int _int(Object? value) => (value as num?)?.toInt() ?? 0;
 
 class LbSubscription {
   final int id;
+
+  /// The plan this subscription was bought from; renewals are priced by it.
+  final int planId;
   final String token;
   final String name;
   final LbPlanStatus status;
@@ -32,6 +35,7 @@ class LbSubscription {
 
   const LbSubscription({
     required this.id,
+    this.planId = 0,
     required this.token,
     required this.name,
     required this.status,
@@ -46,6 +50,7 @@ class LbSubscription {
     final plan = json['subscribe'] as Map<String, Object?>? ?? const {};
     return LbSubscription(
       id: _int(json['id']),
+      planId: _int(json['subscribe_id'] ?? plan['id']),
       token: json['token'] as String? ?? '',
       name: plan['name'] as String? ?? '',
       status: _parseStatus(json['status']),
@@ -59,6 +64,7 @@ class LbSubscription {
 
   factory LbSubscription.fromJson(Map<String, Object?> json) => LbSubscription(
     id: _int(json['id']),
+    planId: _int(json['planId']),
     token: json['token'] as String? ?? '',
     name: json['name'] as String? ?? '',
     status: _parseStatus(json['status']),
@@ -71,6 +77,7 @@ class LbSubscription {
 
   Map<String, Object?> toJson() => {
     'id': id,
+    'planId': planId,
     'token': token,
     'name': name,
     'status': status.index,
@@ -84,6 +91,7 @@ class LbSubscription {
   /// Folds in the `subscription-userinfo` header, whose `expire` is seconds.
   LbSubscription withUserinfo(SubscriptionInfo info) => LbSubscription(
     id: id,
+    planId: planId,
     token: token,
     name: name,
     status: status,

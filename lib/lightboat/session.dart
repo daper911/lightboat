@@ -43,11 +43,12 @@ class LbSessionState {
     bool? syncing,
     Object? syncError,
     bool clearSyncError = false,
+    bool clearSubscription = false,
   }) => LbSessionState(
     phase: phase ?? this.phase,
     email: email ?? this.email,
     hasJwt: hasJwt ?? this.hasJwt,
-    subscription: subscription ?? this.subscription,
+    subscription: clearSubscription ? null : subscription ?? this.subscription,
     subscriptions: subscriptions ?? this.subscriptions,
     syncing: syncing ?? this.syncing,
     syncError: clearSyncError ? null : syncError ?? this.syncError,
@@ -107,6 +108,43 @@ class LbSession extends Notifier<LbSessionState> {
       password: password,
       captchaTicket: captchaTicket,
     );
+    await _signIn(email, jwt);
+  }
+
+  /// Same captcha contract as [login]; a new account starts without a plan.
+  Future<void> register({
+    required String email,
+    required String password,
+    required String code,
+    String? invite,
+    String? captchaTicket,
+  }) async {
+    final jwt = await _api.register(
+      email: email,
+      password: password,
+      code: code,
+      invite: invite,
+      captchaTicket: captchaTicket,
+    );
+    await _signIn(email, jwt);
+  }
+
+  /// Runs an account call with the JWT; an expired one is dropped so the UI
+  /// can ask for a new login while the connection keeps running.
+  Future<T> authed<T>(Future<T> Function(PanelApi api, String jwt) call) async {
+    final jwt = _jwt;
+    if (jwt == null) {
+      throw const PanelException(40002, 'not signed in');
+    }
+    try {
+      return await call(_api, jwt);
+    } on PanelException catch (error) {
+      if (error.isAuthExpired) await _expireJwt();
+      rethrow;
+    }
+  }
+
+  Future<void> _signIn(String email, String jwt) async {
     _jwt = jwt;
     final subscriptions = await _api.subscriptions(jwt);
     final subscription = pickSubscription(subscriptions);
@@ -135,12 +173,14 @@ class LbSession extends Notifier<LbSessionState> {
       if (fetchAccount && jwt != null) {
         try {
           final subscriptions = await _api.subscriptions(jwt);
+          final picked = pickSubscription(
+            subscriptions,
+            preferredId: state.subscription?.id,
+          );
           state = state.copyWith(
             subscriptions: subscriptions,
-            subscription: pickSubscription(
-              subscriptions,
-              preferredId: state.subscription?.id,
-            ),
+            subscription: picked,
+            clearSubscription: picked == null,
           );
           await _persist();
         } on PanelException catch (error) {

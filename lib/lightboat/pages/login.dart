@@ -6,6 +6,7 @@ import 'package:fl_clash/lightboat/api/panel_api.dart';
 import 'package:fl_clash/lightboat/config.dart';
 import 'package:fl_clash/lightboat/pages/captcha.dart';
 import 'package:fl_clash/lightboat/pages/logo.dart';
+import 'package:fl_clash/lightboat/pages/register.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
@@ -180,9 +181,12 @@ class _LbLoginPageState extends ConsumerState<LbLoginPage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           TextButton(
-                            onPressed: () =>
-                                unawaited(lbOpenUrl(LbConfig.registerUrl)),
-                            child: const Text(LbStrings.register),
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) => const LbRegisterPage(),
+                              ),
+                            ),
+                            child: const Text(LbStrings.registerLink),
                           ),
                           TextButton(
                             onPressed: () =>

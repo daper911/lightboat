@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/lightboat/config.dart';
+import 'package:fl_clash/lightboat/pages/apps.dart';
 import 'package:fl_clash/lightboat/pages/home.dart';
 import 'package:fl_clash/lightboat/pages/login.dart';
 import 'package:fl_clash/lightboat/pages/logo.dart';
+import 'package:fl_clash/lightboat/pages/purchase.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
@@ -168,7 +170,14 @@ class _LbMePageState extends ConsumerState<LbMePage> {
                 backgroundColor: colors.accent,
                 foregroundColor: colors.accentInk,
               ),
-              onPressed: () => unawaited(lbOpenUrl(LbConfig.purchaseUrl)),
+              onPressed: () => unawaited(
+                showLbPurchase(
+                  context,
+                  renewing: subscription != null && subscription.renewable
+                      ? subscription
+                      : null,
+                ),
+              ),
               child: Text(
                 subscription == null ? LbStrings.buyPlan : LbStrings.renew,
               ),
@@ -181,6 +190,12 @@ class _LbMePageState extends ConsumerState<LbMePage> {
               label: LbStrings.switchPlan,
               onTap: () => unawaited(_switchPlan()),
             ),
+          _MeRow(
+            label: LbStrings.splitTunnel,
+            onTap: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => const LbAppsPage())),
+          ),
           _MeRow(
             label: LbStrings.refreshPlan,
             onTap: () =>

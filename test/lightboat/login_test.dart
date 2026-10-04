@@ -1,9 +1,5 @@
-import 'dart:convert';
-
 import 'package:fl_clash/icons/icons.dart';
-import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
-import 'package:fl_clash/lightboat/auth/credential_store.dart';
 import 'package:fl_clash/lightboat/pages/login.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
@@ -12,91 +8,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../helpers/test_app.dart';
-
-final _pixel = base64Decode(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-);
-
-class _FakePanelApi extends PanelApi {
-  _FakePanelApi() : super(userAgent: 'test');
-
-  final List<String?> loginTickets = [];
-  final List<int> verifiedX = [];
-  int captchasServed = 0;
-  bool requireCaptcha = false;
-  bool rejectFirstCaptcha = false;
-  int? loginError;
-
-  @override
-  Future<String> login({
-    required String email,
-    required String password,
-    String? captchaTicket,
-  }) async {
-    loginTickets.add(captchaTicket);
-    final error = loginError;
-    if (error != null) throw PanelException(error, '');
-    if (requireCaptcha && captchaTicket == null) {
-      throw const PanelException(LbErrorCode.captchaRequired, '');
-    }
-    return 'jwt';
-  }
-
-  @override
-  Future<List<LbSubscription>> subscriptions(String jwt) async => const [];
-
-  @override
-  Future<LbSlideCaptcha> slideCaptcha() async {
-    captchasServed++;
-    return LbSlideCaptcha(
-      id: 'captcha-$captchasServed',
-      image: _pixel,
-      thumb: _pixel,
-      thumbX: 5,
-      thumbY: 72,
-      thumbWidth: 65,
-      thumbHeight: 65,
-    );
-  }
-
-  @override
-  Future<String> verifySlideCaptcha({
-    required String id,
-    required int x,
-    required int y,
-  }) async {
-    verifiedX.add(x);
-    if (rejectFirstCaptcha && verifiedX.length == 1) {
-      throw const PanelException(LbErrorCode.captchaFailed, '');
-    }
-    return 'ticket';
-  }
-}
-
-class _MemoryStore extends LbCredentialStore {
-  LbStoredSession saved = const LbStoredSession();
-
-  @override
-  Future<LbStoredSession> load() async => saved;
-
-  @override
-  Future<void> save(LbStoredSession session) async => saved = session;
-
-  @override
-  Future<void> clearJwt() async {}
-
-  @override
-  Future<void> clear() async => saved = const LbStoredSession();
-}
+import 'fakes.dart';
 
 void main() {
-  late _FakePanelApi api;
-  late _MemoryStore store;
+  late FakePanelApi api;
+  late MemoryStore store;
   late ProviderContainer container;
 
   setUp(() {
-    api = _FakePanelApi();
-    store = _MemoryStore();
+    api = FakePanelApi();
+    store = MemoryStore();
     container = ProviderContainer(
       overrides: [
         lbPanelApiProvider.overrideWithValue(api),
