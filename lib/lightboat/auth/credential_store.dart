@@ -34,34 +34,33 @@ class LbCredentialStore {
   static const _subscriptionsKey = 'lb_subscriptions';
 
   Future<LbStoredSession> load() async {
-    final Map<String, String> values;
     try {
-      values = await _storage.readAll();
+      return _decode(await _storage.readAll());
     } catch (_) {
       // A backup restored onto a new device carries values whose Keystore key
-      // stayed behind; they can never be decrypted again.
+      // stayed behind, and a value can be cut short; neither is recoverable.
       await clear();
       return const LbStoredSession();
     }
-    LbSubscription? subscription;
+  }
+
+  LbStoredSession _decode(Map<String, String> values) {
     final rawSubscription = values[_subscriptionKey];
-    if (rawSubscription != null) {
-      subscription = LbSubscription.fromJson(
-        (jsonDecode(rawSubscription) as Map).cast<String, Object?>(),
-      );
-    }
     final rawList = values[_subscriptionsKey];
-    final subscriptions = rawList == null
-        ? const <LbSubscription>[]
-        : [
-            for (final item in jsonDecode(rawList) as List)
-              LbSubscription.fromJson((item as Map).cast<String, Object?>()),
-          ];
     return LbStoredSession(
       jwt: values[_jwtKey],
       email: values[_emailKey],
-      subscription: subscription,
-      subscriptions: subscriptions,
+      subscription: rawSubscription == null
+          ? null
+          : LbSubscription.fromJson(
+              (jsonDecode(rawSubscription) as Map).cast<String, Object?>(),
+            ),
+      subscriptions: rawList == null
+          ? const []
+          : [
+              for (final item in jsonDecode(rawList) as List)
+                LbSubscription.fromJson((item as Map).cast<String, Object?>()),
+            ],
     );
   }
 

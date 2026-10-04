@@ -34,8 +34,18 @@ class FakePanelApi extends PanelApi {
     return 'jwt';
   }
 
+  List<LbSubscription> subscriptionList = const [];
+  int? subscriptionsError;
+
   @override
-  Future<List<LbSubscription>> subscriptions(String jwt) async => const [];
+  Future<List<LbSubscription>> subscriptions(String jwt) async {
+    final error = subscriptionsError;
+    if (error != null) throw PanelException(error, '');
+    return subscriptionList;
+  }
+
+  @override
+  Future<LbSiteConfig> siteConfig() async => const LbSiteConfig();
 
   @override
   Future<LbSlideCaptcha> slideCaptcha() async {
@@ -167,7 +177,11 @@ class MemoryStore extends LbCredentialStore {
   Future<void> save(LbStoredSession session) async => saved = session;
 
   @override
-  Future<void> clearJwt() async {}
+  Future<void> clearJwt() async => saved = LbStoredSession(
+    email: saved.email,
+    subscription: saved.subscription,
+    subscriptions: saved.subscriptions,
+  );
 
   @override
   Future<void> clear() async => saved = const LbStoredSession();

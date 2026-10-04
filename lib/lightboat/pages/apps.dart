@@ -33,7 +33,9 @@ class _LbAppsPageState extends ConsumerState<LbAppsPage> {
     super.initState();
     _initial = ref.read(vpnSettingProvider).accessControlProps;
     _props = _initial;
-    unawaited(_loadPackages());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(_loadPackages());
+    });
   }
 
   @override

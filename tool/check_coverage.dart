@@ -31,6 +31,7 @@ const _groupFloors = <String, double>{
   'icons': 90.0,
   'pages': 71.0,
   'plugins': 67.0,
+  'lightboat': 86.0,
   'lib': 20.0,
 };
 

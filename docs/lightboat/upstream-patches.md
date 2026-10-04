@@ -34,4 +34,5 @@
 
 | 文件 | 改动 | 原因 |
 |---|---|---|
+| `tool/check_coverage.dart` | `_groupFloors` 新增 `'lightboat': 86.0` | CI 要求每个代码组都登记覆盖率下限；轻舟代码 2026-10-04 实测 88.5% | 上游调整这张表时保留这一行 |
 | `.gitignore` | `docs/` 改为 `docs/*` + `!docs/lightboat/`；新增 `*.jks`、`key.properties` | 提交轻舟文档；签名证书不进 git |

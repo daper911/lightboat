@@ -76,19 +76,19 @@ class PanelApi {
   PanelApi({
     required String userAgent,
     List<String> panelUrls = LbConfig.panelUrls,
-    Dio? dio,
+    HttpClientAdapter? adapter,
   }) : _panelUrls = panelUrls,
-       _dio =
-           dio ??
-           Dio(
-             BaseOptions(
-               connectTimeout: const Duration(seconds: 10),
-               receiveTimeout: const Duration(seconds: 15),
-               headers: {'User-Agent': userAgent},
-               responseType: ResponseType.json,
-               validateStatus: (_) => true,
-             ),
-           );
+       _dio = Dio(
+         BaseOptions(
+           connectTimeout: const Duration(seconds: 10),
+           receiveTimeout: const Duration(seconds: 15),
+           headers: {'User-Agent': userAgent},
+           responseType: ResponseType.json,
+           validateStatus: (_) => true,
+         ),
+       ) {
+    if (adapter != null) _dio.httpClientAdapter = adapter;
+  }
 
   String get panelUrl => _panelUrl ?? _panelUrls.first;
 
