@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
-import 'package:fl_clash/pages/scan.dart';
 import 'package:fl_clash/providers/action.dart';
 import 'package:fl_clash/providers/state.dart';
 import 'package:fl_clash/state.dart';
@@ -29,20 +28,6 @@ class AddProfileView extends ConsumerWidget {
 
   Future<void> _handleAddProfileFormFile(WidgetRef ref) async {
     unawaited(ref.read(profilesActionProvider.notifier).addProfileFormFile());
-  }
-
-  Future<void> _toScan(WidgetRef ref) async {
-    final profilesAction = ref.read(profilesActionProvider.notifier);
-    if (system.isDesktop) {
-      unawaited(profilesAction.addProfileFormQrCode());
-      return;
-    }
-    final url = await BaseNavigator.push(context, const ScanPage());
-    if (url != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        unawaited(profilesAction.addProfileFormURL(url));
-      });
-    }
   }
 
   Future<void> _toAdd(WidgetRef ref) async {
@@ -80,12 +65,6 @@ class AddProfileView extends ConsumerWidget {
     return ListView(
       padding: EdgeInsets.only(top: context.contentTopPadding, bottom: 16),
       children: [
-        ListItem(
-          leading: const GlyphIcon(AppGlyphs.qrCode),
-          title: Text(appLocalizations.qrcode),
-          subtitle: Text(appLocalizations.qrcodeDesc),
-          onTap: () => _toScan(ref),
-        ),
         ListItem(
           leading: const GlyphIcon(AppGlyphs.importFile),
           title: Text(appLocalizations.file),

@@ -102,6 +102,7 @@ class _LbLoginPageState extends ConsumerState<LbLoginPage> {
                         textAlign: TextAlign.center,
                         style: textTheme.headlineMedium?.copyWith(
                           color: colors.ink,
+                          fontFamily: lbSerif,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 8,
                         ),
@@ -112,6 +113,8 @@ class _LbLoginPageState extends ConsumerState<LbLoginPage> {
                         textAlign: TextAlign.center,
                         style: textTheme.bodyMedium?.copyWith(
                           color: colors.muted,
+                          fontFamily: lbSerif,
+                          letterSpacing: 2,
                         ),
                       ),
                       const SizedBox(height: 40),

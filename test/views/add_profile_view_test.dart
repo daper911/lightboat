@@ -23,7 +23,7 @@ ProviderContainer _containerFor(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('lists the QR code, file, and URL import entries', (
+  testWidgets('lists the file and URL import entries, without QR code', (
     tester,
   ) async {
     final container = _containerFor(tester);
@@ -43,7 +43,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final l10n = currentAppLocalizations;
-    expect(find.text(l10n.qrcode), findsOne);
+    expect(find.text(l10n.qrcode), findsNothing);
     expect(find.text(l10n.file), findsOne);
     expect(find.text(l10n.url), findsOne);
     expect(tester.takeException(), null);

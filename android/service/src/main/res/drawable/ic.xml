@@ -1,17 +1,21 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:width="240dp"
-    android:height="240dp"
-    android:viewportWidth="240"
-    android:viewportHeight="240"
-    tools:ignore="VectorRaster">
-  <path
-      android:pathData="M48.1,80.89L168.44,11.41A23.16,23.16 0,0 1,191.6,51.53L71.26,121.01A23.16,23.16 0,0 1,48.1,80.89Z"
-      android:fillColor="#FFFFFF"/>
-  <path
-      android:pathData="M78.98,134.37L139.16,99.63A23.16,23.16 0,0 1,162.32,139.75L102.14,174.49A23.16,23.16 0,0 1,78.98,134.37Z"
-      android:fillColor="#FFFFFF"/>
-  <path
-      android:pathData="M98.28,207.92A23.16,23.16 0,1 1,144.6,207.92A23.16,23.16 0,1 1,98.28,207.92Z"
-      android:fillColor="#FFFFFF"/>
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+  <!-- Lightboat boat and wave strokes from the seal (docs/lightboat/08-brand-and-ui.md §2). -->
+  <group android:translateY="-2.5">
+    <path android:pathData="M14,36 C22,44 42,44 50,36"
+        android:strokeColor="#FFFFFF" android:strokeWidth="5"
+        android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M24,35 C25,27 39,27 40,35"
+        android:strokeColor="#FFFFFF" android:strokeWidth="4.5"
+        android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M44,34 L51,18"
+        android:strokeColor="#FFFFFF" android:strokeWidth="4"
+        android:strokeLineCap="round" android:strokeLineJoin="round"/>
+    <path android:pathData="M12,48 C18,45 24,51 30,48 S42,45 52,48"
+        android:strokeColor="#FFFFFF" android:strokeWidth="3.5"
+        android:strokeLineCap="round" android:strokeLineJoin="round"/>
+  </group>
 </vector>

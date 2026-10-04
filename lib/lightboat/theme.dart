@@ -1,5 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 
+/// Bundled subset of Noto Serif SC holding only 轻舟已过万重山; any other
+/// character falls back to the system font.
+const lbSerif = 'LightboatSerif';
+
 /// Brand palette from docs/lightboat/08-brand-and-ui.md §3.
 class LbColors {
   final Color paper;

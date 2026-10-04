@@ -27,6 +27,10 @@ abstract final class LbStrings {
   static const connected = '已连接';
   static const connect = '连接';
   static const disconnect = '断开';
+  static const vpnTitle = '创建本地 VPN';
+  static const vpnExplain =
+      '轻舟需要创建一个本地 VPN 才能为你加密连接，不会读取你的数据。\n\n接下来系统会询问是否允许，请点「确定」。';
+  static const continueText = '继续';
 
   static const line = '线路';
   static const autoLine = '自动选择最快';

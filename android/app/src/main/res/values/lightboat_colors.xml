@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lightboat paper (docs/lightboat/08-brand-and-ui.md §3); the night variant lives in values-night. -->
+    <color name="lb_paper">#FAF6EE</color>
+</resources>

@@ -173,12 +173,6 @@ class ProfilesAction extends _$ProfilesAction {
     }
   }
 
-  Future<void> addProfileFormQrCode() async {
-    final url = await globalState.safeRun(picker.pickerConfigQRCode);
-    if (url == null) return;
-    unawaited(addProfileFormURL(url));
-  }
-
   void reorder(List<Profile> profiles) {
     ref.read(profilesProvider.notifier).reorder(profiles);
   }

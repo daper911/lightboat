@@ -16,6 +16,7 @@ import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LbHomePage extends ConsumerWidget {
   const LbHomePage({super.key});
@@ -34,6 +35,7 @@ class LbHomePage extends ConsumerWidget {
           LbStrings.appName,
           style: context.textTheme.titleLarge?.copyWith(
             color: colors.ink,
+            fontFamily: lbSerif,
             fontWeight: FontWeight.bold,
             letterSpacing: 4,
           ),
@@ -296,6 +298,37 @@ class _ConnectButton extends ConsumerWidget {
   const _ConnectButton();
 
   static const _size = 168.0;
+  static const _vpnExplainedKey = 'lb_vpn_explained';
+
+  /// Explains the system VPN prompt the first time, before Android shows it.
+  Future<void> _toggle(BuildContext context, WidgetRef ref) async {
+    if (!ref.read(isStartProvider)) {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(_vpnExplainedKey) != true) {
+        if (!context.mounted) return;
+        final accepted = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text(LbStrings.vpnTitle),
+            content: const Text(LbStrings.vpnExplain),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text(LbStrings.cancel),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text(LbStrings.continueText),
+              ),
+            ],
+          ),
+        );
+        if (accepted != true) return;
+        await prefs.setBool(_vpnExplainedKey, true);
+      }
+    }
+    ref.read(commonActionProvider.notifier).toggleRunning();
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -337,9 +370,7 @@ class _ConnectButton extends ConsumerWidget {
                 child: InkWell(
                   customBorder: AppShape.circle,
                   onTap: hasProfile
-                      ? () => ref
-                            .read(commonActionProvider.notifier)
-                            .toggleRunning()
+                      ? () => unawaited(_toggle(context, ref))
                       : null,
                   child: SizedBox.square(
                     dimension: _size - 16,
