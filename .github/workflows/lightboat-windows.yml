@@ -5,7 +5,8 @@ name: lightboat-windows
 
 on:
   push:
-    branches: [main]
+    # `windows` is the Windows milestone branch: every push gets a test build.
+    branches: [main, windows]
     paths:
       - 'lib/**'
       - 'windows/**'

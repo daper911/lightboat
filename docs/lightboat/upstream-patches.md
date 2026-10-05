@@ -34,10 +34,22 @@
 
 ## Windows
 
-W1 起往这里登记对 FlClash Windows 端文件的改动（计划见 [windows/W2 §5](windows/W2-architecture.md)）。
+计划见 [windows/W2 §5](windows/W2-architecture.md)。进程改名（运营方 2026-10-04 确认）：主程序 `Lightboat.exe`、内核 `LightboatCore.exe`、后台服务 `LightboatHelperService`、命名管道前缀 `LightboatCore_`。安卓不受影响（内核与后台服务只在桌面端使用）。
 
 | 文件 | 改动 | 原因 | 合并上游时注意 |
 |---|---|---|---|
+| `build_config.yaml`（新增，仓库根目录） | `core_name: LightboatCore`、`helper_name: LightboatHelperService` | 构建钩子（`plugins/setup/setup_hooks/lib/src/options.dart`）自带的覆盖机制，不用改钩子代码；后台服务编译时内嵌的内核文件名和 SHA256 也跟着变 | 上游新增配置项时这个文件不受影响；上游改了默认名也不影响我们 |
+| `lib/common/constant.dart` | `appName` 改为 `Lightboat`、`appHelperService` 改为 `LightboatHelperService`、Windows 命名管道前缀改为 `LightboatCore_` | 进程改名；`appName` 同时决定开机自启的注册表项名、托盘提示、日志 / 备份文件名、TUN 网卡名、锁文件名 | 三个值要和 `build_config.yaml`、`services/helper` 保持一致；`test/core/transport_test.dart`（管道前缀）、`test/state_run_globals_test.dart`（默认 UA 里的程序名）的期望值同步改了 |
+| `lib/common/path.dart` | 内核路径 `LightboatCore.exe`；锁文件改为 `$appName.lock` | 同上 | |
+| `services/helper/src/service/windows.rs`、`hub.rs`、`build.rs` | 服务名 `LightboatHelperService`；允许的管道前缀 `\\.\pipe\LightboatCore_`（及对应测试数据）；`CORE_NAME` 默认值 `LightboatCore.exe` | 后台服务只接受这个前缀的内核地址，必须和 Dart 一致 | Linux 的 socket 前缀与测试数据没有改 |
+| `arb/intl_*.arb`（四种语言）及生成的 `lib/l10n/` | `helperCorruptTip`、`coreBlockedByPolicyTip`、`coreBlockedBySmartAppControlTip` 里的 `FlClashCore.exe` / `FlClash` 改为 `LightboatCore.exe` / 轻舟（英、日、俄文用 Lightboat） | Windows 用户会看到这些提示（内核被智能应用控制拦截时） | 上游改这几条文案时重新替换名字，再 `dart run intl_utils:generate` |
+| `windows/CMakeLists.txt` | `project(Lightboat)`、`BINARY_NAME "Lightboat"`；安装步骤里的内核 / 后台服务文件名 | 主程序名与进程改名 | |
+| `windows/runner/main.cpp` | 窗口标题改为「轻舟」（用 `\u8F7B\u821F` 转义，因为 runner 不是按 UTF-8 编译的） | 品牌 | 单实例检查按程序路径匹配，与标题无关 |
+| `windows/runner/Runner.rc` | 公司名 `QINZHOU NETWORK CO.LLC`、文件说明「轻舟」、产品名 / 内部名 `Lightboat`、原始文件名 `Lightboat.exe`、版权 | 任务管理器显示「文件说明」；**数据目录由公司名和产品名决定，变为 `%APPDATA%\QINZHOU NETWORK CO.LLC\Lightboat`**，不再和正版 FlClash 共用 `%APPDATA%\com.follow\clash` | 首次对外发布后不要再改公司名和产品名，否则用户的数据目录会变 |
+| `windows/runner/resources/app_icon.ico` | 换成轻舟印章（16–256 px，由 `widgets/logo.dart` 同一份 SVG 渲染） | 品牌；安装程序图标也用它 | |
+| `windows/packaging/exe/make_config.yaml` | `app_id` 改为 `E45C3C6D-2F4C-4941-94D7-12924C55563A`（**首次对外发布后永不修改**）；名称、显示名「轻舟」、发布者 `QINZHOU NETWORK CO.LLC`、网址、可执行文件名 | 安装包身份；安装目录随 `app_name` 变为 `C:\Program Files\Lightboat` | |
+| `windows/packaging/exe/inno_setup.iss` | 结束进程、注销服务改用新名字；安装 / 升级前和卸载时，系统代理若指向 `127.0.0.1:7890` 就关掉（同时改 WinINet 的 `DefaultConnectionSettings` 标志位并通知系统）；卸载时删除开机自启（`Run`、`StartupApproved\Run`、启动文件夹里的快捷方式） | `taskkill /f` 不会走程序自己的清理，原来卸载后会「整机上不了网」（W-I5）；只关自己端口的代理，不动其他代理软件的设置 | 卸载程序以管理员身份运行，`HKCU` 是确认 UAC 的那个账户；标准用户输入管理员密码时清理的是管理员账户的设置 |
+| `.github/workflows/lightboat-windows.yml` | 推送到 `windows` 分支也触发构建 | Windows 里程碑在 `windows` 分支上开发，每次推送都出测试包 | 合并回 `main` 后可以保留 |
 
 ## 构建
 

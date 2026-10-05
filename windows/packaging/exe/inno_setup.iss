@@ -19,13 +19,28 @@ ArchitecturesAllowed={{ARCH}}
 ArchitecturesInstallIn64BitMode={{ARCH}}
 
 [Code]
+const
+  InternetSettingsKey = 'Software\Microsoft\Windows\CurrentVersion\Internet Settings';
+  ConnectionsKey = 'Software\Microsoft\Windows\CurrentVersion\Internet Settings\Connections';
+  RunKey = 'Software\Microsoft\Windows\CurrentVersion\Run';
+  StartupApprovedKey = 'Software\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run';
+  AutoLaunchName = 'Lightboat';
+  // Lightboat's default mixed port; a proxy elsewhere belongs to another app.
+  OwnProxy = '127.0.0.1:7890';
+  INTERNET_OPTION_REFRESH = 37;
+  INTERNET_OPTION_SETTINGS_CHANGED = 39;
+  PROXY_TYPE_PROXY = 2;
+
+function InternetSetOption(Internet: Longint; Option: Cardinal; Buffer: Longint; BufferLength: Cardinal): BOOL;
+  external 'InternetSetOptionW@wininet.dll stdcall delayload';
+
 procedure KillProcesses;
 var
   Processes: TArrayOfString;
   i: Integer;
   ResultCode: Integer;
 begin
-  Processes := ['FlClash.exe', 'FlClashCore.exe', 'FlClashHelperService.exe'];
+  Processes := ['Lightboat.exe', 'LightboatCore.exe', 'LightboatHelperService.exe'];
 
   for i := 0 to GetArrayLength(Processes)-1 do
   begin
@@ -38,17 +53,50 @@ var
   HelperPath: String;
   ResultCode: Integer;
 begin
-  HelperPath := ExpandConstant('{app}\\FlClashHelperService.exe');
+  HelperPath := ExpandConstant('{app}\\LightboatHelperService.exe');
   if FileExists(HelperPath) then
   begin
     Exec(HelperPath, 'uninstall', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   end;
 end;
 
+// taskkill skips the app's own cleanup, so a connected Lightboat would leave
+// Windows pointing every browser at a port nobody serves.
+procedure ClearOwnSystemProxy;
+var
+  Server: String;
+  Settings: AnsiString;
+  Flags: Integer;
+begin
+  if not RegQueryStringValue(HKCU, InternetSettingsKey, 'ProxyServer', Server) then Exit;
+  if Pos(OwnProxy, Server) = 0 then Exit;
+  RegWriteDWordValue(HKCU, InternetSettingsKey, 'ProxyEnable', 0);
+  // WinINet keeps the authoritative copy here; byte 9 holds the connection flags.
+  if RegQueryBinaryValue(HKCU, ConnectionsKey, 'DefaultConnectionSettings', Settings) and (Length(Settings) > 8) then
+  begin
+    Flags := Ord(Settings[9]);
+    if (Flags and PROXY_TYPE_PROXY) <> 0 then
+    begin
+      Settings[9] := Chr(Flags and not PROXY_TYPE_PROXY);
+      RegWriteBinaryValue(HKCU, ConnectionsKey, 'DefaultConnectionSettings', Settings);
+    end;
+  end;
+  InternetSetOption(0, INTERNET_OPTION_SETTINGS_CHANGED, 0, 0);
+  InternetSetOption(0, INTERNET_OPTION_REFRESH, 0, 0);
+end;
+
+procedure RemoveAutoLaunch;
+begin
+  RegDeleteValue(HKCU, RunKey, AutoLaunchName);
+  RegDeleteValue(HKCU, StartupApprovedKey, AutoLaunchName);
+  DeleteFile(ExpandConstant('{userstartup}\' + AutoLaunchName + '.lnk'));
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
   UnregisterHelperService;
   KillProcesses;
+  ClearOwnSystemProxy;
   Result := '';
 end;
 
@@ -56,6 +104,8 @@ function InitializeUninstall(): Boolean;
 begin
   UnregisterHelperService;
   KillProcesses;
+  ClearOwnSystemProxy;
+  RemoveAutoLaunch;
   Result := True;
 end;
 

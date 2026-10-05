@@ -1,3 +1,5 @@
+import 'dart:io';
+
 abstract final class LbConfig {
   /// Tried in order; the first one answering the heartbeat wins.
   static const panelUrls = ['https://ssr.cnbetx.com'];
@@ -9,8 +11,9 @@ abstract final class LbConfig {
 
   /// The panel picks the subscription format by User-Agent and only answers
   /// with mihomo YAML when it contains `clash`.
-  static String userAgent(String version) =>
-      'Lightboat-Android/$version (Clash.Meta)';
+  static String userAgent(String version, {bool? windows}) =>
+      'Lightboat-${(windows ?? Platform.isWindows) ? 'Windows' : 'Android'}'
+      '/$version (Clash.Meta)';
 
   static const proxyGroup = '🚀 Proxy';
   static const autoProxy = '🌏 Auto';

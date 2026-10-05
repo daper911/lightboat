@@ -1,5 +1,6 @@
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
+import 'package:fl_clash/lightboat/config.dart';
 import 'package:fl_clash/lightboat/logic/account.dart';
 import 'package:fl_clash/lightboat/logic/connection.dart';
 import 'package:fl_clash/lightboat/logic/format.dart';
@@ -102,5 +103,16 @@ void main() {
     expect(summary.progress, 0);
     expect(summary.usage, '512 MB / ${LbStrings.unlimited}');
     expect(lbPlanTip(plan, DateTime(2026, 10, 5)), isNull);
+  });
+
+  test('names the platform in the subscription User-Agent', () {
+    expect(
+      LbConfig.userAgent('0.5.0', windows: true),
+      'Lightboat-Windows/0.5.0 (Clash.Meta)',
+    );
+    expect(
+      LbConfig.userAgent('0.5.0', windows: false),
+      'Lightboat-Android/0.5.0 (Clash.Meta)',
+    );
   });
 }
