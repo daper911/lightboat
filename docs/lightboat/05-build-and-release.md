@@ -82,6 +82,9 @@ https://cdn.cnbetx.com/lightboat/
 - 第一版点「下载」用系统浏览器下载安装包（安卓下载完点通知安装，Windows 运行安装程序）。App 内下载、校验 sha256、直接调起安装留到以后（需要安卓安装权限）；
 - 发布：`python3 tool/lightboat/publish_r2.py --notes "…" --android dist/….apk --windows ….exe`（读 `key.env` 里的 R2 密钥，需要 `boto3`；只传一个平台时保留另一个平台的条目）。**上传的安装包不是本地刚构建的（例如从 Actions 下载的 Windows 包）时，必须用 `--version X.Y.Z+N` 写明它的版本**，否则会按本地 `pubspec.yaml` 的版本命名。
 
+- **下载损坏**（2026-10-05 三星 A15 上遇到）：手机上下载的 APK 大小正确、内容却坏了，安装提示「package appears to be invalid」，真实错误是 `INSTALL_PARSE_FAILED_NO_CERTIFICATES … sha-256 digest of contents did not verify`。重新下载即可。排查用校验页 `https://cdn.cnbetx.com/lightboat/check.html`（在手机浏览器里算所选 APK 的 SHA-256，与已发布版本对比，文件不上传；页面目前手工生成，发新版后要更新里面的指纹）。安装教程要写上「装不上先用校验页核对，坏了就删掉重下；三星手机可关闭『下载加速器』」；
+- Cloudflare 会缓存 `cdn.cnbetx.com` 上的 APK（包括响应头），**同名文件不要覆盖**，每个版本用新文件名；现有令牌没有清缓存的权限，必要时在链接后加 `?v=N` 绕过。
+
 网站「连接设备 → Android / Windows」的下载按钮可以直接指向上面的地址（需要主项目改，02 §9 第 1 条）。
 
 ## 5. 发布流程（每个版本）
