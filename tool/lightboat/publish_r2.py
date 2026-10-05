@@ -55,10 +55,19 @@ except s3.exceptions.NoSuchKey:
     latest = {}
 
 
+MIME = {'android': 'application/vnd.android.package-archive'}
+
+
 def upload(path, platform, file_key, name):
     data = pathlib.Path(path).read_bytes()
     key = f'{PREFIX}/{platform}/{name}'
-    s3.put_object(Bucket=BUCKET, Key=key, Body=data, ContentType='application/octet-stream')
+    s3.put_object(
+        Bucket=BUCKET,
+        Key=key,
+        Body=data,
+        ContentType=MIME.get(platform, 'application/octet-stream'),
+        ContentDisposition=f'attachment; filename="{name}"',
+    )
     entry = latest.setdefault(platform, {})
     entry.update(version=version, build=int(build))
     entry[file_key] = {
