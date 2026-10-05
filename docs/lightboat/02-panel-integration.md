@@ -254,10 +254,12 @@ User-Agent: Lightboat-Android/0.1.0 (Clash.Meta)
 | 2 | 延长 JWT 有效期（例如 30 天），或者给 App 提供 refresh token | 体验优化，不阻塞 |
 | 3 | 备用面板地址（另一个域名，最好走 CDN）与远程地址列表（见 [03 §5](03-architecture.md)） | 正式发布前 |
 | 4 | 规则名单同步到自己的 R2（每天一次的定时任务），模板改指向 `cdn.cnbetx.com`，摆脱对 cdn.jsdmirror.com 的依赖 | 可选，§10 上线后 |
-| 6 | **改成白名单分流（运营方 2026-10-05 决定）**：替换 `deploy/templates/clash.gotmpl` 的分组、规则与规则集，见 §10 | 尽快 |
+| 6 | ~~改成白名单分流~~：**已上线**（2026-10-05，见 §10） | 已完成 |
 | 5 | 订阅模板里给 App 单独一套（如果以后需要和 FlClash 用户的配置不同）：在面板「订阅模板」里加一行 UA 匹配 `Lightboat` | 可选 |
 
-## 10. 白名单分流（待主项目执行）
+## 10. 白名单分流（2026-10-05 已上线）
+
+**上线记录**：主项目提交 `c9ad8956`；2026-10-05 06:30（UTC）在 HK1 正式面板上执行 `mvpn templates`，旧模板备份在 HK1 的 `/tmp/clash.gotmpl.before-whitelist`；用测试账号以 Clash UA 拉线上订阅核对，只有 2 个分组、7 条规则；运营方在手机上用分流自检页 `https://test.cnbetx.com`（主项目 `deploy/routetest/`）确认国内直连、国外走 HK1。**注意**：HK1 的出口被 ChatGPT、Claude 识别为香港（Claude 提示地区不可用），10.3 里「ChatGPT 不提示地区不支持」要走非香港节点（如 JP1），与分流规则无关。
 
 **决定**（运营方 2026-10-05）：Clash 模板的分流从「20 个规则集 + 12 个分组」改成**白名单**：国内名单里的直连，其余全部走代理；分组只留 `🚀 Proxy`（线路）和 `🌏 Auto`（自动选最快）。白名单与黑名单（GFW 名单）的对比见本次讨论：黑名单下 ChatGPT、Claude、Netflix 这类「没被墙但拒绝中国 IP」的服务会直连失败，所以不用。
 

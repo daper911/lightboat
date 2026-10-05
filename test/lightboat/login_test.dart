@@ -1,6 +1,6 @@
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
-import 'package:fl_clash/lightboat/pages/login.dart';
+import 'package:fl_clash/lightboat/mobile/login.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

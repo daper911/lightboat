@@ -1,6 +1,8 @@
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/auth/credential_store.dart';
-import 'package:fl_clash/lightboat/pages/announcements.dart';
+import 'package:fl_clash/lightboat/logic/account.dart';
+import 'package:fl_clash/lightboat/mobile/announcements.dart';
+import 'package:fl_clash/lightboat/widgets/prompts.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

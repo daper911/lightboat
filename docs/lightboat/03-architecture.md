@@ -38,7 +38,7 @@ FlClash 的几条硬规则，Fork 之后仍然有效（摘自它的 AGENTS.md）
 
 ## 3. 代码组织
 
-> 2026-10-04 起本仓库同时构建 Windows：`lib/lightboat/` 的业务代码两个平台共用，界面分「手机外壳」和「桌面外壳」，平台分支点集中登记。详见 [windows/W2 §3](windows/W2-architecture.md)。下面的目录树是最初的规划，实际结构以代码为准。
+> 2026-10-05 起：业务逻辑放 `lib/lightboat/logic/` 等共用位置，界面分 `mobile/`（安卓）和 `desktop/`（Windows）两套，各自设计。实际结构与规则见 [windows/W2 §3](windows/W2-architecture.md)。下面的目录树是最初的规划，已过时。
 
 原则：**轻舟的代码尽量放在独立目录，对 FlClash 原有文件只做最小、可追踪的改动**，这样每次合并上游时冲突最少。
 

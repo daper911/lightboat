@@ -2,98 +2,27 @@ import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/lightboat/api/commerce.dart';
-import 'package:fl_clash/lightboat/config.dart';
-import 'package:fl_clash/lightboat/pages/login.dart';
-import 'package:fl_clash/lightboat/pages/qr.dart';
-import 'package:fl_clash/lightboat/session.dart';
+import 'package:fl_clash/lightboat/logic/format.dart';
+import 'package:fl_clash/lightboat/logic/purchase.dart';
+import 'package:fl_clash/lightboat/widgets/qr.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
-class LbPaymentPage extends ConsumerStatefulWidget {
+class LbPaymentPage extends ConsumerWidget {
   final String orderNo;
 
   const LbPaymentPage({super.key, required this.orderNo});
 
   @override
-  ConsumerState<LbPaymentPage> createState() => _LbPaymentPageState();
-}
-
-class _LbPaymentPageState extends ConsumerState<LbPaymentPage> {
-  /// Same cadence as the website's order page.
-  static const _pollEvery = Duration(seconds: 3);
-
-  Timer? _poll;
-  LbOrder? _order;
-  LbCheckout? _checkout;
-  Object? _error;
-  bool _checkingOut = false;
-
-  LbSession get _session => ref.read(lbSessionProvider.notifier);
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_refresh());
-    _poll = Timer.periodic(_pollEvery, (_) => unawaited(_refresh()));
-  }
-
-  @override
-  void dispose() {
-    _poll?.cancel();
-    super.dispose();
-  }
-
-  Future<void> _refresh() async {
-    try {
-      final order = await _session.authed(
-        (api, jwt) => api.order(jwt, widget.orderNo),
-      );
-      if (!mounted) return;
-      setState(() {
-        _order = order;
-        _error = null;
-      });
-      if (order.isPaid || order.isOver) {
-        _poll?.cancel();
-        if (order.isPaid) unawaited(_session.refresh());
-        return;
-      }
-      if (_checkout == null && !_checkingOut) await _startCheckout();
-    } catch (error) {
-      if (mounted) setState(() => _error = error);
-    }
-  }
-
-  Future<void> _startCheckout() async {
-    _checkingOut = true;
-    try {
-      final checkout = await _session.authed(
-        (api, jwt) => api.checkout(
-          jwt,
-          orderNo: widget.orderNo,
-          returnUrl: LbConfig.siteLink('order'),
-        ),
-      );
-      if (!mounted) return;
-      setState(() => _checkout = checkout);
-      if (checkout.type == 'url' && checkout.checkoutUrl.isNotEmpty) {
-        _openCashier(checkout.checkoutUrl);
-      }
-    } finally {
-      _checkingOut = false;
-    }
-  }
-
-  void _openCashier(String url) => unawaited(lbOpenUrl(url));
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colors = LbColors.of(context);
-    final order = _order;
-    final error = _error;
+    final provider = lbPaymentProvider(orderNo);
+    final state = ref.watch(provider);
+    final order = state.order;
+    final error = state.error;
     return Scaffold(
       backgroundColor: colors.paper,
       appBar: AppBar(
@@ -106,12 +35,12 @@ class _LbPaymentPageState extends ConsumerState<LbPaymentPage> {
         children: [
           if (order != null) _OrderSummary(order: order),
           const SizedBox(height: 24),
-          if (order?.isPaid ?? false)
+          if (state.paid)
             const _PaidBlock()
-          else if (order?.isOver ?? false)
+          else if (state.closed)
             _Notice(text: LbStrings.orderClosed, color: colors.seal)
           else
-            _buildPending(context, colors),
+            _buildPending(context, colors, state.checkout),
           if (error != null) ...[
             const SizedBox(height: 16),
             _Notice(
@@ -120,7 +49,8 @@ class _LbPaymentPageState extends ConsumerState<LbPaymentPage> {
             ),
             Center(
               child: TextButton(
-                onPressed: () => unawaited(_refresh()),
+                onPressed: () =>
+                    unawaited(ref.read(provider.notifier).refresh()),
                 child: const Text(LbStrings.retry),
               ),
             ),
@@ -130,8 +60,11 @@ class _LbPaymentPageState extends ConsumerState<LbPaymentPage> {
     );
   }
 
-  Widget _buildPending(BuildContext context, LbColors colors) {
-    final checkout = _checkout;
+  Widget _buildPending(
+    BuildContext context,
+    LbColors colors,
+    LbCheckout? checkout,
+  ) {
     if (checkout == null) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -158,7 +91,7 @@ class _LbPaymentPageState extends ConsumerState<LbPaymentPage> {
                 backgroundColor: colors.accent,
                 foregroundColor: colors.accentInk,
               ),
-              onPressed: () => _openCashier(url),
+              onPressed: () => unawaited(lbOpenUrl(url)),
               child: const Text(LbStrings.openCashier),
             ),
           ),

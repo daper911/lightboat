@@ -1,8 +1,8 @@
 import 'package:fl_clash/lightboat/auth/credential_store.dart';
 import 'package:fl_clash/lightboat/config.dart';
-import 'package:fl_clash/lightboat/pages/home.dart';
-import 'package:fl_clash/lightboat/pages/login.dart';
-import 'package:fl_clash/lightboat/pages/logo.dart';
+import 'package:fl_clash/lightboat/mobile/home.dart';
+import 'package:fl_clash/lightboat/mobile/login.dart';
+import 'package:fl_clash/lightboat/widgets/logo.dart';
 import 'package:fl_clash/lightboat/root.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/theme.dart';

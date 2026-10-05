@@ -1,5 +1,5 @@
 import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/lightboat/pages/apps.dart';
+import 'package:fl_clash/lightboat/mobile/apps.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';

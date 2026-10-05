@@ -48,39 +48,54 @@ W0 要在真机上确认的行为。「代码推断」是 2026-10-04 读 FlClash
 | 凭据存储 | `flutter_secure_storage` 的 Windows 实现：用系统 DPAPI 加密，文件存在上面的数据目录里 | 待测（W-A5） |
 | 根证书 | 面板和订阅域名的证书链止于 ISRG Root X2（Let's Encrypt）。Windows 只在自己的系统组件需要时才下载缺少的根证书，Dart 却只读系统里已有的；全新的 Windows（例如云服务器）上没有 X2，App 登录就报「网络连接失败」。已修：`lib/lightboat/trust.dart` 在启动时内置 ISRG Root X1、X2（两个平台都加，不分支） | 2026-10-04 运营方在 AWS 全新 Windows Server 上复现（`certutil -store root` 里没有 ISRG，`Test-NetConnection` 通）；内置证书后（`53c22cfb`，run 37224312058）同一台机器登录、连接、打开 google.com 都正常 |
 
-## 3. 代码组织：共用代码 + 两个外壳
+## 3. 代码组织：共用逻辑 + 两套界面
+
+**方向（运营方 2026-10-05 决定）**：Windows 版用自己的桌面界面，**不套手机界面**；视觉走轻舟品牌风格（参考网站控制台，W3），首页、线路、购买、我的四个页面全部按桌面习惯重新设计。底层（内核、平台能力、轻舟业务逻辑）和安卓共用一份。
+
+三层：
+
+| 层 | 内容 | 两个平台 |
+|---|---|---|
+| ① 内核与平台能力 | mihomo、安卓 VPN 服务、Windows 系统代理 / 托盘 / 开机自启、安装包 | FlClash 自带，共用，尽量不改 |
+| ② 轻舟业务逻辑 | 面板接口、登录状态、订阅同步、连接与断开、线路、购买与付款、检查更新、公告、导出日志 | **共用一份**，不含任何界面 |
+| ③ 界面 | 页面怎么摆、怎么操作 | **安卓一套（`mobile/`）、Windows 一套（`desktop/`）**，各自设计 |
 
 ```
 lib/lightboat/
-├─ api/            面板接口（两个平台共用，不改）
-├─ auth/           凭据存储（共用；Windows 上 flutter_secure_storage 走系统加密）
-├─ session.dart    登录状态、订阅同步（共用）
-├─ config.dart     常量；userAgent 按平台生成（见 §5）
-├─ theme.dart      品牌色（共用；桌面端补充侧边栏、标题栏的颜色角色）
-├─ strings.dart    文案（共用；桌面专属文案也放这里）
-├─ pages/          页面内容（共用的部分抽成「不带 Scaffold 的内容组件」）
-├─ shell/          ← 新增
-│   ├─ mobile_shell.dart    手机外壳：现有的首页 + 推入式页面，行为不变
-│   └─ desktop_shell.dart   桌面外壳：侧边栏 + 内容区（W3）
-└─ desktop/        ← 新增，只在 Windows 上用
-    ├─ tray.dart            托盘菜单与图标状态（基于 FlClash 的 tray_manager）
-    ├─ window.dart          标题栏样式、关闭缩到托盘的提示、窗口默认尺寸
-    └─ settings.dart        「Windows 设置」：开机自启、静默启动、自动连接
+├─ api/  auth/              面板接口、凭据存储
+├─ session.dart             登录状态、订阅同步
+├─ config.dart  strings.dart  theme.dart  trust.dart  rules.dart
+├─ update.dart  diagnostics.dart  line_groups.dart  notification.dart
+├─ logic/                   ② 从安卓页面拆出来的流程（2026-10-05）
+│   ├─ connection.dart        连接 / 断开、启动失败判定、连接后测一次延迟、模式切换、线路信息与切换、出口地区探测
+│   ├─ purchase.dart          购买 / 续费（套餐、时长、付款方式、报价、下单）与付款（订单轮询、收银台）
+│   ├─ account.dart           滑块后重试、验证码重发倒计时、公告（列表、Markdown 转纯文本、popup 只弹一次）
+│   ├─ plan.dart              套餐卡片的数据（状态、到期文字、流量进度）、首页提示、启动提醒
+│   └─ format.dart            日期、流量、延迟、出口地区名、打开链接
+├─ widgets/                 两套界面都能用的小组件：滑块验证码、二维码、Logo、卡片、启动弹窗（套餐提醒、公告）
+├─ mobile/                  ③ 安卓界面：首页、线路、登录、注册、我的、购买、付款、公告、分应用代理
+├─ desktop/                 ③ Windows 界面（W2 里程碑新建）：外壳（标题栏 + 侧边栏）、四个页面、托盘、Windows 设置
+└─ root.dart                启动准备；已登录时按平台选择界面
 ```
 
 规则：
 
-1. **外壳选择只有一处**：`LbRoot` 在已登录时按 `system.isDesktop` 返回 `DesktopShell` 或 `MobileShell`。以后若要让安卓平板也用宽屏布局，再改成按窗口宽度判断；
-2. **页面内容只写一份**：现在的页面（如 `home.dart` 里的套餐卡片、连接按钮、线路卡片）拆成内容组件，手机外壳和桌面外壳各自摆放；
-3. **平台分支要集中、可查**：只在下面列出的地方按平台分支，新增分支点时更新本表。
+1. **业务逻辑只写在 ②**。界面只负责显示和把操作转给 ②（例如连接按钮只调用 `lbConnectionProvider.notifier.toggle()`）；判断、计时、重试、接口调用不写在页面里。新功能先写 ② 和测试，再分别做两边界面；
+2. **界面不互相引用**：`desktop/` 不 import `mobile/`，反之亦然；两边都要用的放 `widgets/`；
+3. **选界面只有一处**：`LbRoot` 按 `system.isDesktop` 选 `mobile/` 或 `desktop/` 的首页；
+4. **平台分支集中、可查**：只在下表列出的地方按平台分支，新增分支点时更新本表。
 
 | 分支点 | Android | Windows |
 |---|---|---|
-| 外壳 | `MobileShell` | `DesktopShell` |
+| 界面 | `mobile/` | `desktop/` |
 | 「我的」页 | 分应用代理、保活引导 | Windows 设置（开机自启等） |
-| 首次连接前的说明 | VPN 授权说明 | 不显示（系统代理不需要授权） |
-| 托盘 / 标题栏 | 无 | `lib/lightboat/desktop/` |
+| 首次连接前的说明、连接失败提示 | VPN 授权说明（`mobile/home.dart`） | 不显示（系统代理不需要授权） |
+| 托盘 / 标题栏 | 无 | `desktop/` |
 | UA 平台名 | `Android` | `Windows` |
+
+**新增功能的流程**：先在 [功能对照表](../feature-matrix.md) 里登记归类（共用 / 只安卓 / 只 Windows）→ 写 ② 与测试 → 做安卓界面 → 做 Windows 界面。两边可以不同时上线，对照表里标明哪个平台还没有入口。两个平台共用一个版本号（W4 §4）。
+
+**维护成本**：合并上游 FlClash 与现在相同（轻舟界面不改 FlClash 的界面文件）；接口和业务变化只改一次；新增用户看得到的功能要写两次界面，Windows 界面约占该功能工作量的三到五成。
 
 ## 4. 关键流程
 
@@ -110,7 +125,7 @@ lib/lightboat/
 | 位置 | 改动 | 里程碑 |
 |---|---|---|
 | `lib/lightboat/config.dart` | `userAgent` 改为 `Lightboat-${Platform.isWindows ? 'Windows' : 'Android'}/$version (Clash.Meta)`（轻舟自己的文件，不算上游补丁） | W1 |
-| `lib/lightboat/root.dart` | 按平台选外壳（轻舟文件） | W2 |
+| `lib/lightboat/root.dart` | 按平台选界面（轻舟文件） | W2 |
 | `windows/packaging/exe/make_config.yaml` | `app_id: E45C3C6D-2F4C-4941-94D7-12924C55563A`（**首次发布后永不修改**，否则用户升级会变成装两份）；`app_name`/`display_name: 轻舟`；`publisher: QINZHOU NETWORK CO.LLC`；`publisher_url: https://ssr.cnbetx.com`；`executable_name`/`output_base_file_name` 改为 Lightboat | W1 |
 | `windows/packaging/exe/inno_setup.iss` | 结束进程、注销服务里的进程名同步改名；安装目录 `Lightboat` | W1 |
 | `windows/CMakeLists.txt`（`BINARY_NAME`）、`windows/runner/main.cpp`（窗口标题）、`windows/runner/Runner.rc`（文件说明、公司名、版权） | 主程序名与资源信息改为轻舟 | W1 |

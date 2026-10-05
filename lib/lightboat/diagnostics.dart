@@ -4,7 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
-import 'package:fl_clash/lightboat/pages/home.dart';
+import 'package:fl_clash/lightboat/logic/format.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/models/models.dart';

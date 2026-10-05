@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/lightboat/config.dart';
-import 'package:fl_clash/lightboat/pages/announcements.dart';
-import 'package:fl_clash/lightboat/pages/home.dart';
-import 'package:fl_clash/lightboat/pages/login.dart';
-import 'package:fl_clash/lightboat/pages/logo.dart';
-import 'package:fl_clash/lightboat/pages/plan_reminder.dart';
+import 'package:fl_clash/lightboat/mobile/home.dart';
+import 'package:fl_clash/lightboat/mobile/login.dart';
+import 'package:fl_clash/lightboat/mobile/purchase.dart';
+import 'package:fl_clash/lightboat/widgets/logo.dart';
+import 'package:fl_clash/lightboat/widgets/prompts.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/theme.dart';
 import 'package:fl_clash/lightboat/trust.dart';
@@ -74,7 +74,12 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
     await lbCheckForUpdate(context);
     if (!mounted) return;
     final subscription = ref.read(lbSessionProvider).subscription;
-    if (await lbRemindPlan(context, subscription) || !mounted) return;
+    final reminded = await lbRemindPlan(
+      context,
+      subscription,
+      openPurchase: (renewing) => showLbPurchase(context, renewing: renewing),
+    );
+    if (reminded || !mounted) return;
     await lbShowPopupAnnouncement(context, ref);
   }
 

@@ -18,6 +18,7 @@
 | [07-milestones.md](07-milestones.md) | 所有人 | 里程碑、工作量、每一步的验收标准 |
 | [08-brand-and-ui.md](08-brand-and-ui.md) | 开发 / 设计 | 品牌：名称、Logo、配色（十六进制）、字体、界面草图、文案 |
 | [09-project-context.md](09-project-context.md) | 所有人 | 轻舟项目现状：面板、节点、域名、支付、安全，与 App 相关的部分 |
+| [feature-matrix.md](feature-matrix.md) | 所有人 | **功能对照表**：每个功能是两个平台共用、只安卓还是只 Windows，各平台做到哪一步 |
 | [windows/](windows/README.md) | 所有人 | **Windows 版**：需求、架构、宽屏界面、云端构建、测试、里程碑（W1–W6） |
 | [env/](../../env/)（仓库根目录） | 开发 | 构建环境的 Dockerfile 与 VS Code 开发容器配置（草稿，第一次搭建时验证） |
 

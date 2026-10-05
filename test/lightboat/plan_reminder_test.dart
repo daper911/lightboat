@@ -1,7 +1,8 @@
 import 'dart:async';
 
 import 'package:fl_clash/lightboat/api/models.dart';
-import 'package:fl_clash/lightboat/pages/plan_reminder.dart';
+import 'package:fl_clash/lightboat/logic/plan.dart';
+import 'package:fl_clash/lightboat/widgets/prompts.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -10,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../helpers/test_app.dart';
 
 final _now = DateTime(2026, 10, 5, 12);
+
+Future<void> _noPurchase(LbSubscription? renewing) async {}
 
 LbSubscription _plan({
   DateTime? expires,
@@ -66,7 +69,12 @@ void main() {
     final context = await pump(tester);
     final plan = _plan(expires: DateTime(2026, 10, 1), renewable: false);
 
-    final first = lbRemindPlan(context, plan, now: _now);
+    final first = lbRemindPlan(
+      context,
+      plan,
+      openPurchase: _noPurchase,
+      now: _now,
+    );
     await tester.pumpAndSettle();
     expect(find.text(LbStrings.expiredTip), findsOneWidget);
     expect(find.text(LbStrings.buy), findsOneWidget);
@@ -74,10 +82,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(await first, isTrue);
 
-    expect(await lbRemindPlan(context, plan, now: _now), isFalse);
+    expect(
+      await lbRemindPlan(context, plan, openPurchase: _noPurchase, now: _now),
+      isFalse,
+    );
     final tomorrow = lbRemindPlan(
       context,
       plan,
+      openPurchase: _noPurchase,
       now: _now.add(const Duration(days: 1)),
     );
     await tester.pumpAndSettle();

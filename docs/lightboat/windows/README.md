@@ -17,6 +17,10 @@
 | [W5-testing.md](W5-testing.md) | 运营方怎么下载、安装、测试；测试环境；回归清单 |
 | [W6-milestones.md](W6-milestones.md) | 里程碑 W0–W4、工作量、验收标准 |
 
+## 2026-10-05 补充的方向
+
+Windows 用自己的桌面界面，不套手机界面；视觉走轻舟品牌风格（参考网站控制台）；首页、线路、购买、我的四页全部重新设计。底层逻辑和安卓共用，已从安卓页面拆到 `lib/lightboat/logic/`（W2 §3）。功能归类见 [功能对照表](../feature-matrix.md)。
+
 ## 2026-10-04 定下的方向
 
 底座 FlClash（与安卓共用）· GitHub Actions 云端构建 · 运营方在 Windows 上测试 · 暂不签名 · 传统宽屏桌面布局 · 默认系统代理。

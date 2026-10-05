@@ -2,21 +2,18 @@ import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
-import 'package:fl_clash/lightboat/api/panel_api.dart';
 import 'package:fl_clash/lightboat/config.dart';
-import 'package:fl_clash/lightboat/pages/captcha.dart';
-import 'package:fl_clash/lightboat/pages/logo.dart';
-import 'package:fl_clash/lightboat/pages/register.dart';
+import 'package:fl_clash/lightboat/logic/account.dart';
+import 'package:fl_clash/lightboat/logic/format.dart';
+import 'package:fl_clash/lightboat/widgets/captcha.dart';
+import 'package:fl_clash/lightboat/widgets/logo.dart';
+import 'package:fl_clash/lightboat/mobile/register.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:url_launcher/url_launcher.dart';
-
-Future<void> lbOpenUrl(String url) =>
-    launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
 
 class LbLoginPage extends ConsumerStatefulWidget {
   const LbLoginPage({super.key});
@@ -53,20 +50,15 @@ class _LbLoginPageState extends ConsumerState<LbLoginPage> {
     });
     final session = ref.read(lbSessionProvider.notifier);
     try {
-      try {
-        await session.login(email: email, password: password);
-      } on PanelException catch (error) {
-        if (error.code != LbErrorCode.captchaRequired) rethrow;
-        if (!mounted) return;
-        final ticket = await showSlideCaptcha(context);
-        if (ticket == null) return;
-        await session.login(
+      final signedIn = await lbWithCaptcha(
+        (ticket) => session.login(
           email: email,
           password: password,
           captchaTicket: ticket,
-        );
-      }
-      if (mounted && Navigator.of(context).canPop()) {
+        ),
+        () async => mounted ? showSlideCaptcha(context) : null,
+      );
+      if (signedIn && mounted && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
       }
     } catch (error) {

@@ -79,6 +79,14 @@ class LbPlan {
     };
     return '$quantity $unit';
   }
+
+  String durationChoiceLabel(LbPlanDuration duration) {
+    final label = durationLabel(duration.quantity);
+    if (duration.discount >= 100) return label;
+    final tenths = duration.discount / 10;
+    return '$label · '
+        '${tenths.toStringAsFixed(duration.discount % 10 == 0 ? 0 : 1)} 折';
+  }
 }
 
 /// Lists purchasable plans: `show` and `sell` on, in panel order.

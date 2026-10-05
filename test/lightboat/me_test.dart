@@ -1,9 +1,9 @@
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/auth/credential_store.dart';
-import 'package:fl_clash/lightboat/pages/apps.dart';
-import 'package:fl_clash/lightboat/pages/login.dart';
-import 'package:fl_clash/lightboat/pages/me.dart';
-import 'package:fl_clash/lightboat/pages/purchase.dart';
+import 'package:fl_clash/lightboat/mobile/apps.dart';
+import 'package:fl_clash/lightboat/mobile/login.dart';
+import 'package:fl_clash/lightboat/mobile/me.dart';
+import 'package:fl_clash/lightboat/mobile/purchase.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/providers/providers.dart';

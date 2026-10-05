@@ -1,6 +1,6 @@
 import 'package:fl_clash/lightboat/api/commerce.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
-import 'package:fl_clash/lightboat/pages/home.dart';
+import 'package:fl_clash/lightboat/logic/format.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

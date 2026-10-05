@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/icons/icons.dart';
-import 'package:fl_clash/lightboat/api/panel_api.dart';
-import 'package:fl_clash/lightboat/pages/captcha.dart';
+import 'package:fl_clash/lightboat/logic/account.dart';
+import 'package:fl_clash/lightboat/widgets/captcha.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
@@ -18,15 +18,11 @@ class LbRegisterPage extends ConsumerStatefulWidget {
 }
 
 class _LbRegisterPageState extends ConsumerState<LbRegisterPage> {
-  /// The panel's `verify_code_interval`; it rejects earlier resends anyway.
-  static const _resendAfter = 60;
-
   final _emailController = TextEditingController();
   final _codeController = TextEditingController();
   final _passwordController = TextEditingController();
   final _inviteController = TextEditingController();
-  Timer? _countdown;
-  int _secondsLeft = 0;
+  final _countdown = LbResendCountdown();
   bool _obscure = true;
   bool _sending = false;
   bool _busy = false;
@@ -35,7 +31,7 @@ class _LbRegisterPageState extends ConsumerState<LbRegisterPage> {
 
   @override
   void dispose() {
-    _countdown?.cancel();
+    _countdown.dispose();
     _emailController.dispose();
     _codeController.dispose();
     _passwordController.dispose();
@@ -47,19 +43,6 @@ class _LbRegisterPageState extends ConsumerState<LbRegisterPage> {
     setState(() {
       _message = message;
       _messageIsError = error;
-    });
-  }
-
-  void _startCountdown() {
-    _countdown?.cancel();
-    setState(() => _secondsLeft = _resendAfter);
-    _countdown = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted || _secondsLeft <= 1) {
-        timer.cancel();
-        if (mounted) setState(() => _secondsLeft = 0);
-        return;
-      }
-      setState(() => _secondsLeft--);
     });
   }
 
@@ -77,7 +60,7 @@ class _LbRegisterPageState extends ConsumerState<LbRegisterPage> {
           .read(lbPanelApiProvider)
           .sendEmailCode(email: email, captchaTicket: ticket);
       if (!mounted) return;
-      _startCountdown();
+      _countdown.start();
       _show(LbStrings.codeSent, error: false);
     } catch (error) {
       if (mounted) _show(LbStrings.panelError(error, action: '发送'));
@@ -109,15 +92,13 @@ class _LbRegisterPageState extends ConsumerState<LbRegisterPage> {
       captchaTicket: ticket,
     );
     try {
-      try {
-        await attempt(null);
-      } on PanelException catch (error) {
-        if (error.code != LbErrorCode.captchaRequired || !mounted) rethrow;
-        final ticket = await showSlideCaptcha(context);
-        if (ticket == null) return;
-        await attempt(ticket);
+      final registered = await lbWithCaptcha(
+        attempt,
+        () async => mounted ? showSlideCaptcha(context) : null,
+      );
+      if (registered && mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
-      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (error) {
       if (mounted) _show(LbStrings.panelError(error, action: '注册'));
     } finally {
@@ -169,14 +150,17 @@ class _LbRegisterPageState extends ConsumerState<LbRegisterPage> {
                     const SizedBox(width: 12),
                     SizedBox(
                       height: 56,
-                      child: OutlinedButton(
-                        onPressed: _sending || _secondsLeft > 0
-                            ? null
-                            : () => unawaited(_sendCode()),
-                        child: Text(
-                          _secondsLeft > 0
-                              ? LbStrings.resendIn(_secondsLeft)
-                              : LbStrings.sendCode,
+                      child: ValueListenableBuilder<int>(
+                        valueListenable: _countdown,
+                        builder: (_, secondsLeft, _) => OutlinedButton(
+                          onPressed: _sending || secondsLeft > 0
+                              ? null
+                              : () => unawaited(_sendCode()),
+                          child: Text(
+                            secondsLeft > 0
+                                ? LbStrings.resendIn(secondsLeft)
+                                : LbStrings.sendCode,
+                          ),
                         ),
                       ),
                     ),

@@ -21,6 +21,7 @@
 - 里程碑：`docs/lightboat/07-milestones.md`
 - 品牌与界面：`docs/lightboat/08-brand-and-ui.md`
 - 轻舟项目现状：`docs/lightboat/09-project-context.md`
+- **功能对照表**（每个功能归属哪个平台、各平台进度）：`docs/lightboat/feature-matrix.md`
 - **Windows**：`docs/lightboat/windows/`（需求 W1、架构 W2、宽屏界面 W3、构建 W4、测试 W5、里程碑 W6）
 
 ## 2. 当前状态与下一步
@@ -38,14 +39,16 @@
 - 共用优化（**0.4.0，待真机验证**；两个平台都生效，没有平台分支）：全局模式跟随线路（`GLOBAL` 固定为 `🚀 Proxy`）；线路列表隐藏直连；网络错误细分；「我的 → 导出日志」（打码，启动即收集 info 级日志）；规则集内置（`assets/lightboat/rules/`，首次连接不用下载 5.3 MB；`tool/lightboat/bundle_rules.py` 重新打包）；检查更新（R2 上的 `cdn.cnbetx.com/lightboat/latest.json`，`tool/lightboat/publish_r2.py` 发布，第一版用浏览器下载）；「我的 → 公告」与 popup 公告弹一次；套餐 3 天内到期 / 过期 / 流量用尽时启动弹「套餐提醒」（每天一次，运营方选 App 内弹窗，不做系统通知）。
 - 安卓界面细节打磨（**0.4.1，待真机验证**，运营方 2026-10-05 选定的四项）：「我的」页分成套餐 / 连接 / 帮助 / 关于轻舟四组；通知标题显示「轻舟 · 当前节点」；对话框与底部提示统一品牌外观（`withLightboatBrand`、`lbToast`），「刷新套餐和线路」有结果提示，退出登录按钮写明操作；360dp 小屏 + 1.3 倍字体自动检查后修了一处溢出。系统通知设置里的类别名早已是「轻舟连接服务」。
 - 2026-10-05：运营方在三星 A15 上装 0.4.1 失败，查明是**手机下载时文件损坏**（大小对、内容错，签名校验不过），重新下载后正常；R2 上加了校验页 `cdn.cnbetx.com/lightboat/check.html`，经验写在 05 §4。
-- 2026-10-05：运营方决定**分流改成白名单**（国内名单直连、其余代理，名单用 MetaCubeX 的 `.mrs`），新模板与上线步骤写在 02 §10，**待运营方回主项目执行**；轻舟只依赖 `🚀 Proxy`、`🌏 Auto` 两个分组名，不用发版，下次发版时重新打包内置规则。
+- 2026-10-05：运营方决定**分流改成白名单**（国内名单直连、其余代理，名单用 MetaCubeX 的 `.mrs`），**当天已在主项目上线并验证**（02 §10）；轻舟只依赖 `🚀 Proxy`、`🌏 Auto` 两个分组名，不用发版。**App 里内置的规则还是旧的 20 个规则集，下次发版前要重新打包**（02 §10.4）。
+- 2026-10-05（主项目那边）：节点从国内连接时间歇丢包，根因未定（主项目 `docs/roadmap/node-stability.md`）；HK1 的 TCP 改成 AnyTLS（轻舟内核支持），新增 JP1 东京节点。**在国内网络下测出「连不上」不一定是客户端问题。**
+- 2026-10-05：运营方定下 **Windows 方向**：用自己的桌面界面，不套手机界面；视觉走轻舟品牌风格（参考网站控制台，W3 方案 A）；首页、线路、购买、我的四页全部重新设计。同日完成**拆逻辑**：连接、购买、付款、登录流程从安卓页面拆到 `lib/lightboat/logic/`，目录改成 `logic/`、`widgets/`、`mobile/`（以后加 `desktop/`），安卓界面和行为不变（W2 §3）。
 - **安卓下一步：深色模式逐页检查**（要运营方在手机上切到深色模式截图）；之后按运营方反馈继续打磨，或回到后台保活引导、自动连接。
-- **Windows 下一步：W0 实测反馈 → W1**（见 `docs/lightboat/windows/W6-milestones.md`）。
+- **Windows 下一步：W1 品牌与安装包**（W0 剩余的实测并入 W1），然后 W2 桌面界面（见 `docs/lightboat/windows/W6-milestones.md`）。
 - 完成一个里程碑，就更新本节。
 
 ## 3. 硬性约束
 
-1. **只做 Android 和 Windows**。iOS、macOS、Linux 不做（FlClash 的这些平台代码保留不动）。**轻舟的业务逻辑只写一份**，放在 `lib/lightboat/` 下与平台无关的部分；只在确实需要时按平台分支（`system.isDesktop` / `Platform.isWindows` / `Platform.isAndroid`），并在 `docs/lightboat/windows/W2-architecture.md` §3 的分支点表里登记。改共用代码时两个平台都要考虑。
+1. **只做 Android 和 Windows**。iOS、macOS、Linux 不做（FlClash 的这些平台代码保留不动）。**轻舟的业务逻辑只写一份**（`lib/lightboat/` 里 `mobile/`、`desktop/` 以外的部分，流程放 `logic/`），页面里不写判断、计时、重试和接口调用；**界面两套**：安卓在 `mobile/`、Windows 在 `desktop/`，互不引用，共用的小组件放 `widgets/`。只在确实需要时按平台分支（`system.isDesktop` / `Platform.isWindows` / `Platform.isAndroid`），并在 `docs/lightboat/windows/W2-architecture.md` §3 的分支点表里登记。新功能先在功能对照表登记归类。改共用代码时两个平台都要考虑。
 2. **不改 mihomo 内核**（子模块 `core/Clash.Meta`），跟随上游。
 3. **轻舟代码放在 `lib/lightboat/`**；对 FlClash 原有文件的每一处改动都记进 `docs/lightboat/upstream-patches.md`（文件、改动、原因、合并上游时的注意点），方便以后合并上游。
 4. **移除 Firebase**（Analytics、Crashlytics、google-services），不加任何统计、崩溃上报、广告 SDK。
@@ -68,7 +71,7 @@
 | 面板 API | `https://ssr.cnbetx.com`，统一响应 `{code, msg, data}`，业务错误也是 HTTP 200；鉴权头 `Authorization: <JWT>`（不加 Bearer） |
 | 登录 | `POST /v1/auth/login {email, password, captcha_ticket?}` → `data.token`（JWT，7 天） |
 | 我的订阅 | `GET /v1/public/user/subscribe` → `data.list[]`（`token`、`status`、`expire_time` 毫秒、`traffic`/`upload`/`download` 字节、`subscribe.name`） |
-| 订阅配置 | `https://sub.cnbetx.com/api/subscribe?token=<订阅token>`，**UA 必须含 `clash`**（App 用 `Lightboat-<平台>/<版本> (Clash.Meta)`，平台为 `Android` / `Windows`），否则返回 base64；响应头 `subscription-userinfo`（expire 单位是秒） |
+| 订阅配置 | `https://sub.cnbetx.com/api/subscribe?token=<订阅token>`，**UA 必须含 `clash`**（App 用 `Lightboat-<平台>/<版本> (Clash.Meta)`，平台为 `Android` / `Windows`；**W1 之前代码里写死 `Android`，Windows 版也这样发**），否则返回 base64；响应头 `subscription-userinfo`（expire 单位是秒） |
 | 线路 | 把 `🚀 Proxy` 分组默认选成 `🌏 Auto`（url-test） |
 | 滑块验证码 | 面板返回 `110001` 时：`GET /v1/common/captcha/slide` → 拖动 → `POST /v1/common/captcha/slide/verify {id, x, y}` → `ticket` → 带 `captcha_ticket` 重试。每张图只能提交一次，误差 5 像素，最少 0.4 秒 |
 | 登录失效 | 40002–40005：只清 JWT，**不断开连接**；订阅 token 仍然可用 |

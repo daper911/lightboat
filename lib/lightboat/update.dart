@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/lightboat/config.dart';
-import 'package:fl_clash/lightboat/pages/login.dart';
+import 'package:fl_clash/lightboat/logic/format.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
 import 'package:fl_clash/state.dart';
