@@ -39,7 +39,10 @@ void main() {
         '${manifest.last['name']}@${manifest.last['url']}'.toMd5(),
       ),
     );
-    expect(seeded.readAsStringSync(), contains('payload:'));
+    final bundled = await rootBundle.load(
+      'assets/lightboat/rules/${manifest.last['file']}',
+    );
+    expect(seeded.readAsBytesSync(), gzip.decode(bundled.buffer.asUint8List()));
     expect(seeded.lastModifiedSync().year, 2000);
   });
 }
