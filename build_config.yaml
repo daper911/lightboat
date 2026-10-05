@@ -1,4 +1,8 @@
-# Lightboat names for the desktop Core and Helper executables; everything else
-# keeps the setup hook's defaults (plugins/setup/setup_hooks/lib/src/options.dart).
+tags: with_gvisor
+go_ldflags: "-w -s"
+core_dir: core
 core_name: LightboatCore
+lib_name: libclash
+output_dir: libclash
+helper_dir: services/helper
 helper_name: LightboatHelperService

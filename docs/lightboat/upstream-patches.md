@@ -38,7 +38,7 @@
 
 | 文件 | 改动 | 原因 | 合并上游时注意 |
 |---|---|---|---|
-| `build_config.yaml`（新增，仓库根目录） | `core_name: LightboatCore`、`helper_name: LightboatHelperService` | 构建钩子（`plugins/setup/setup_hooks/lib/src/options.dart`）自带的覆盖机制，不用改钩子代码；后台服务编译时内嵌的内核文件名和 SHA256 也跟着变 | 上游新增配置项时这个文件不受影响；上游改了默认名也不影响我们 |
+| `build_config.yaml`（仓库根目录） | `core_name` 改为 `LightboatCore`、`helper_name` 改为 `LightboatHelperService`，其余行不动 | 构建钩子（`plugins/setup/setup_hooks/lib/src/options.dart`）读这个文件，不用改钩子代码；后台服务编译时内嵌的内核文件名和 SHA256 也跟着变 | 上游改这个文件时保留这两行 |
 | `lib/common/constant.dart` | `appName` 改为 `Lightboat`、`appHelperService` 改为 `LightboatHelperService`、Windows 命名管道前缀改为 `LightboatCore_` | 进程改名；`appName` 同时决定开机自启的注册表项名、托盘提示、日志 / 备份文件名、TUN 网卡名、锁文件名 | 三个值要和 `build_config.yaml`、`services/helper` 保持一致；`test/core/transport_test.dart`（管道前缀）、`test/state_run_globals_test.dart`（默认 UA 里的程序名）的期望值同步改了 |
 | `lib/common/path.dart` | 内核路径 `LightboatCore.exe`；锁文件改为 `$appName.lock` | 同上 | |
 | `services/helper/src/service/windows.rs`、`hub.rs`、`build.rs` | 服务名 `LightboatHelperService`；允许的管道前缀 `\\.\pipe\LightboatCore_`（及对应测试数据）；`CORE_NAME` 默认值 `LightboatCore.exe` | 后台服务只接受这个前缀的内核地址，必须和 Dart 一致 | Linux 的 socket 前缀与测试数据没有改 |
