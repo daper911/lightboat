@@ -250,8 +250,97 @@ User-Agent: Lightboat-Android/0.1.0 (Clash.Meta)
 
 | # | 事项 | 何时需要 |
 |---|---|---|
-| 1 | **APK、Windows 安装包与 `latest.json` 的托管**：比如 `https://ssr.cnbetx.com/downloads/{android,windows}/`（web 容器的静态目录，或 R2），网站「连接设备」的安卓 / Windows 下载按钮指向它；`latest.json` 含 android 与 windows 两段（[05 §4](05-build-and-release.md)、[windows/W4 §6](windows/W4-build-and-ci.md)）。运营方 2026-10-04 决定网站客户端下载暂时搁置 | 第一次对外分发前 |
+| 1 | **网站下载按钮**：安装包与 `latest.json` 已放在 R2（`https://cdn.cnbetx.com/lightboat/`，2026-10-05，[05 §4](05-build-and-release.md)），剩下的是网站「连接设备」的安卓 / Windows 下载按钮指向那里，并在安装教程里写上下载损坏时的处理（校验页 `cdn.cnbetx.com/lightboat/check.html`）。运营方 2026-10-04 决定网站客户端下载暂时搁置 | 第一次对外分发前 |
 | 2 | 延长 JWT 有效期（例如 30 天），或者给 App 提供 refresh token | 体验优化，不阻塞 |
 | 3 | 备用面板地址（另一个域名，最好走 CDN）与远程地址列表（见 [03 §5](03-architecture.md)） | 正式发布前 |
-| 4 | 面板托管规则集，摆脱对 cdn.jsdmirror.com 的依赖 | 可选 |
+| 4 | 规则名单同步到自己的 R2（每天一次的定时任务），模板改指向 `cdn.cnbetx.com`，摆脱对 cdn.jsdmirror.com 的依赖 | 可选，§10 上线后 |
+| 6 | **改成白名单分流（运营方 2026-10-05 决定）**：替换 `deploy/templates/clash.gotmpl` 的分组、规则与规则集，见 §10 | 尽快 |
 | 5 | 订阅模板里给 App 单独一套（如果以后需要和 FlClash 用户的配置不同）：在面板「订阅模板」里加一行 UA 匹配 `Lightboat` | 可选 |
+
+## 10. 白名单分流（待主项目执行）
+
+**决定**（运营方 2026-10-05）：Clash 模板的分流从「20 个规则集 + 12 个分组」改成**白名单**：国内名单里的直连，其余全部走代理；分组只留 `🚀 Proxy`（线路）和 `🌏 Auto`（自动选最快）。白名单与黑名单（GFW 名单）的对比见本次讨论：黑名单下 ChatGPT、Claude、Netflix 这类「没被墙但拒绝中国 IP」的服务会直连失败，所以不用。
+
+**影响范围**：所有 User-Agent 含 `clash` 的客户端（轻舟安卓 / Windows、Clash Verge、FlClash、Clash Meta for Android）。小火箭的模板只有节点、没有规则，不受影响；Stash、Surge、sing-box 模板暂不改。轻舟 App 不用发版：它只依赖 `🚀 Proxy`、`🌏 Auto` 两个分组名，最晚 6 小时自动拿到新规则。
+
+**名单**：MetaCubeX/meta-rules-dat（mihomo 官方，每天自动更新），二进制 `.mrs` 格式，比现在的文本规则集省内存、省电。国内域名 0.54 MB、国内 IP 0.04 MB（现在合计 5.3 MB）。`lb_proxy` / `lb_direct` 是我们自己的「强制代理 / 强制直连」小名单，平时为空，用户反馈某个网站分流不对时往里加一行（`DOMAIN-SUFFIX,example.com`），优先于国内名单。
+
+**已验证**（2026-10-05，mihomo 官方 v1.19.32，名单从 cdn.jsdmirror.com 下载）：配置检查通过；百度、B 站、淘宝、icloud.com.cn → `cn_domain` 直连；223.5.5.5 → `cn_ip` 直连；Google、chatgpt.com、claude.ai、未知网站 → 代理；`lb_proxy` / `lb_direct` 能覆盖国内名单；空的小名单可以接受。
+
+### 10.1 替换内容
+
+`clash.gotmpl` 里从 `proxy-groups:` 到 `url-rewrite:` 之前（即 `proxy-groups`、`rules`、`rule-providers` 三段）整体换成：
+
+```yaml
+proxy-groups:
+  - { name: 🚀 Proxy, type: select, proxies: [🌏 Auto, {{ $proxyNames }}] }
+  - { name: 🌏 Auto, type: url-test, proxies: [{{ $proxyNames }}] }
+
+rules:
+  - RULE-SET, private_domain, DIRECT
+  - RULE-SET, private_ip, DIRECT, no-resolve
+  - RULE-SET, lb_proxy, 🚀 Proxy
+  - RULE-SET, lb_direct, DIRECT
+  - RULE-SET, cn_domain, DIRECT
+  - RULE-SET, cn_ip, DIRECT
+  - MATCH, 🚀 Proxy
+
+rule-providers:
+  private_domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/private.mrs
+    interval: 86400
+  private_ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/private.mrs
+    interval: 86400
+  cn_domain:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@meta/geo/geosite/cn.mrs
+    interval: 86400
+  cn_ip:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://cdn.jsdmirror.com/gh/MetaCubeX/meta-rules-dat@meta/geo/geoip/cn.mrs
+    interval: 86400
+  lb_proxy:
+    type: inline
+    behavior: classical
+    payload: []
+  lb_direct:
+    type: inline
+    behavior: classical
+    payload: []
+```
+
+其余部分（`dns`、`proxies`、`url-rewrite` 等）不动。
+
+### 10.2 上线步骤（在主项目里）
+
+1. 备份：`cp deploy/templates/clash.gotmpl deploy/templates/clash.gotmpl.before-whitelist`（或依靠 git 历史）；
+2. 按 10.1 修改 `deploy/templates/clash.gotmpl`，提交；
+3. 在面板服务器上 `sudo mvpn templates`（会覆盖后台对模板的手工修改）；
+4. 用测试账号拉一次订阅核对：`curl -A 'clash.meta' 'https://sub.cnbetx.com/api/subscribe?token=<测试账号订阅 token>' | sed -n '/^proxy-groups:/,/^url-rewrite:/p'`，应只看到两个分组和 7 条规则；
+5. 在轻舟里「我的 → 刷新套餐和线路」，然后验证 10.3。
+
+**回退**：把模板恢复成改之前的版本（`git checkout <改之前的提交> -- deploy/templates/clash.gotmpl`），再 `sudo mvpn templates`；客户端下次更新订阅时恢复。
+
+### 10.3 上线后验证（轻舟，智能分流模式）
+
+- 百度、B 站、淘宝、微信能打开，「位置」显示中国以外时这些网站仍应直连（速度不受影响）；
+- Google、YouTube、Telegram、ChatGPT、Claude 能用，ChatGPT 不提示地区不支持；
+- 导出日志里能看到 `match RuleSet(cn_domain) using DIRECT` 与 `match Match using 🚀 Proxy`；
+- 「线路」列表只有「自动选择最快」和各节点。
+
+### 10.4 轻舟这边的后续
+
+- 下次发版前重跑 `python3 tool/lightboat/bundle_rules.py`，App 内置的规则换成这 4 个 `.mrs`（约 0.6 MB）；脚本已能处理 `type: http` 的任意格式，`inline` 的会跳过。模板上线到 App 发版之间，新安装的用户首次连接要先下载约 0.6 MB 名单，影响很小；
+- 以后要调整某个网站：只改 `lb_proxy` / `lb_direct`，然后 `mvpn templates`。
+
