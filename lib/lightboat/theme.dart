@@ -1,3 +1,4 @@
+import 'package:fl_clash/common/system.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Bundled subset of Noto Serif SC holding only 轻舟已过万重山; any other
@@ -64,6 +65,14 @@ extension LbThemeData on ThemeData {
         ? LbColors.dark
         : LbColors.light;
     return copyWith(
+      // FlClash's desktop title bar paints these; paper keeps it one piece
+      // with the sidebar below it.
+      colorScheme: system.isDesktop
+          ? colorScheme.copyWith(
+              surfaceContainerHighest: colors.paper,
+              outlineVariant: colors.rule,
+            )
+          : null,
       scaffoldBackgroundColor: colors.paper,
       appBarTheme: appBarTheme.copyWith(
         backgroundColor: colors.paper,

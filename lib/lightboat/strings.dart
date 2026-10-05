@@ -178,6 +178,34 @@ abstract final class LbStrings {
   static String splitSelected(int count) => '已选 $count 个应用';
   static const splitShowSystem = '显示系统应用';
 
+  static const navConsole = '控制台';
+  static const navAccount = '账户';
+  static const home = '首页';
+  static const buyPlanNav = '购买套餐';
+  static const changeLine = '更换';
+  static const current = '当前';
+  static const connectFailedHintDesktop = '请检查网络后重试；仍然不行就换一条线路。';
+  static String portBusy(int port) =>
+      '本机端口 $port 已被其他程序占用（常见是其他代理软件），请先退出它再连接。';
+  static const planCardTitle = '我的套餐';
+  static const sectionWindows = 'Windows 设置';
+  static const autoLaunch = '开机自启';
+  static const silentLaunch = '开机时不显示窗口';
+  static const silentLaunchHint = '只在任务栏右下角显示小舟图标';
+  static const autoConnect = '启动后自动连接';
+  static const minimizeToTray = '关闭窗口时缩到托盘';
+  static const minimizeToTrayHint = '关闭后可从任务栏右下角的小舟图标打开或退出';
+  static const trayHintTitle = '轻舟仍在运行';
+  static const trayHint = '轻舟仍在后台运行，可从任务栏右下角的小舟图标打开或退出。';
+  static const openApp = '打开轻舟';
+  static const quit = '退出';
+  static const mode = '模式';
+  static String trayStatus({required bool running, String? node}) => running
+      ? (node == null ? connected : '$connected · $node')
+      : disconnected;
+  static const close = '关闭';
+  static const backToLogin = '已有账号？返回登录';
+
   static String networkError(LbNetworkIssue? issue) => switch (issue) {
     LbNetworkIssue.timeout => '连接服务器超时，请检查网络后重试',
     LbNetworkIssue.hostLookup => '找不到服务器地址，请检查网络或 DNS 设置',

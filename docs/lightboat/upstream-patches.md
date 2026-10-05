@@ -15,7 +15,7 @@
 | `lib/providers/state/system.dart`、`lib/providers/state.dart` | `sharedState` 的 `currentProfileName` 改为 `ref.watch(lbNotificationTitleProvider)`（`state.dart` 加对应 import） | 安卓连接通知的标题显示「轻舟 · 当前节点」（自动选择时显示它选中的节点），`lib/lightboat/notification.dart` | 合并上游时若 `sharedState` 改名或拆分，把通知标题的取值换回这个 provider |
 | `pubspec.yaml` | 删除 `mobile_scanner`、`image_picker`；`fonts:` 新增 `LightboatSerif`（`assets/fonts/LightboatSerif.ttf`，许可证 `LightboatSerif-OFL.txt`） | 同上；品牌标题字体（08 §4）：网站「轻舟宋」子集再裁到只含「轻舟已过万重山」，2.8 KB | |
 | `pubspec.yaml` | 新增依赖 `qr`（纯 Dart） | App 内付款页画 USDT 收款二维码 | |
-| `pubspec.yaml` | `assets:` 新增 `assets/lightboat/rules/` | 内置订阅用到的 20 个规则集（gzip 后约 0.8 MB），首次连接不用先下载 5.3 MB（02 §5） | 合并上游时保留这一行 |
+| `pubspec.yaml` | `assets:` 新增 `assets/lightboat/rules/` | 内置订阅用到的规则集，首次连接不用先下载（02 §5）；2026-10-05 起是白名单的 4 个 `.mrs`（gzip 后 0.58 MB，02 §10） | 合并上游时保留这一行 |
 | `pubspec.yaml`、`pubspec.lock`，以及 `flutter pub get` 重新生成的 `linux/`、`macos/`、`windows/` 插件注册文件 | 新增依赖 `flutter_secure_storage` | JWT 与订阅 token 存进 Android Keystore 加密存储（01 §7） | 生成文件冲突时直接重新 `flutter pub get`；第二期做 Linux 桌面版时要装 `libsecret-1-dev` |
 
 ## Android
@@ -49,6 +49,12 @@
 | `windows/runner/resources/app_icon.ico` | 换成轻舟印章（16–256 px，由 `widgets/logo.dart` 同一份 SVG 渲染） | 品牌；安装程序图标也用它 | |
 | `windows/packaging/exe/make_config.yaml` | `app_id` 改为 `E45C3C6D-2F4C-4941-94D7-12924C55563A`（**首次对外发布后永不修改**）；名称、显示名「轻舟」、发布者 `QINZHOU NETWORK CO.LLC`、网址、可执行文件名 | 安装包身份；安装目录随 `app_name` 变为 `C:\Program Files\Lightboat` | |
 | `windows/packaging/exe/inno_setup.iss` | 结束进程、注销服务改用新名字；安装 / 升级前和卸载时，系统代理若指向 `127.0.0.1:7890` 就关掉（同时改 WinINet 的 `DefaultConnectionSettings` 标志位并通知系统）；卸载时删除开机自启（`Run`、`StartupApproved\Run`、启动文件夹里的快捷方式） | `taskkill /f` 不会走程序自己的清理，原来卸载后会「整机上不了网」（W-I5）；只关自己端口的代理，不动其他代理软件的设置 | 卸载程序以管理员身份运行，`HKCU` 是确认 UAC 的那个账户；标准用户输入管理员密码时清理的是管理员账户的设置 |
+| `lib/common/app_ports.dart` | 新增全局钩子 `beforeHideToTray` | 关闭窗口缩到托盘之前，轻舟第一次弹出「轻舟仍在后台运行」的说明（`lib/lightboat/desktop/tray.dart`，由 `lightboatPrepare` 挂上）；用钩子是为了不让 FlClash 的状态层引用轻舟界面代码 | |
+| `lib/providers/actions/system.dart` | `handleClose` 在桌面端缩到托盘前、且是用户点关闭时，调用 `beforeHideToTray` | 同上 | 上游改 `handleClose` 时保留这一行 |
+| `lib/models/config.dart`（`WindowPropsExt.size`，手写扩展，不是生成代码） | 没有保存过窗口大小时默认 1080×720（原 680×580）；`test/models/config_test.dart` 的期望值同步改 | 桌面界面的默认尺寸（W3 §1） | |
+| `lib/common/window.dart` | 最小窗口 880×600（原 380×400） | 侧边栏 + 内容区在更窄时会挤压（W3 §1） | |
+| 托盘（不改上游文件） | `lightboatPrepare` 在桌面端把 `trayPort` 换成 `LbTray`（`lib/lightboat/desktop/tray.dart`）：小舟图标（未连接灰色、已连接江青色，`assets/lightboat/tray/`）、精简菜单（状态、连接 / 断开、模式、打开轻舟、退出） | FlClash 的托盘菜单有 TUN、系统代理开关、复制环境变量等，不适合轻舟用户（W3 §6） | 上游改 `TrayPort` 接口时同步改 `LbTray` |
+| `pubspec.yaml` | `assets:` 新增 `assets/lightboat/tray/` | 托盘图标 | 合并上游时保留这一行 |
 | `.github/workflows/lightboat-windows.yml` | 推送到 `windows` 分支也触发构建 | Windows 里程碑在 `windows` 分支上开发，每次推送都出测试包 | 合并回 `main` 后可以保留 |
 
 ## 构建

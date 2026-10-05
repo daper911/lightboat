@@ -1,7 +1,11 @@
 import 'dart:async';
 
+import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/lightboat/config.dart';
+import 'package:fl_clash/lightboat/desktop/auth.dart';
+import 'package:fl_clash/lightboat/desktop/shell.dart';
+import 'package:fl_clash/lightboat/desktop/tray.dart';
 import 'package:fl_clash/lightboat/mobile/home.dart';
 import 'package:fl_clash/lightboat/mobile/login.dart';
 import 'package:fl_clash/lightboat/mobile/purchase.dart';
@@ -21,6 +25,10 @@ import 'package:material_ui/material_ui.dart';
 /// Crashlytics notice do not apply to a build without Firebase.
 Future<void> lightboatPrepare(ProviderContainer container) async {
   lbTrustBundledRoots();
+  if (system.isDesktop) {
+    trayPort = LbTray();
+    beforeHideToTray = lbExplainTrayOnce;
+  }
   container
       .read(appSettingProvider.notifier)
       .update(
@@ -53,7 +61,12 @@ Future<void> lightboatPrepare(ProviderContainer container) async {
 }
 
 class LbRoot extends ConsumerStatefulWidget {
-  const LbRoot({super.key});
+  /// Picks the shell; tests pass it because the test host is a desktop.
+  final bool? desktop;
+
+  const LbRoot({super.key, this.desktop});
+
+  bool get isDesktop => desktop ?? system.isDesktop;
 
   @override
   ConsumerState<LbRoot> createState() => _LbRootState();
@@ -77,7 +90,9 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
     final reminded = await lbRemindPlan(
       context,
       subscription,
-      openPurchase: (renewing) => showLbPurchase(context, renewing: renewing),
+      openPurchase: widget.isDesktop
+          ? ref.read(lbDesktopNavProvider.notifier).openPurchase
+          : (renewing) => showLbPurchase(context, renewing: renewing),
     );
     if (reminded || !mounted) return;
     await lbShowPopupAnnouncement(context, ref);
@@ -117,10 +132,12 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
         if (didPop) return;
         unawaited(ref.read(systemActionProvider.notifier).handleClose());
       },
-      child: switch (phase) {
-        LbPhase.loading => const _Splash(),
-        LbPhase.signedOut => const LbLoginPage(),
-        LbPhase.signedIn => const LbHomePage(),
+      child: switch ((phase, widget.isDesktop)) {
+        (LbPhase.loading, _) => const _Splash(),
+        (LbPhase.signedOut, true) => const LbDesktopAuthPage(),
+        (LbPhase.signedOut, false) => const LbLoginPage(),
+        (LbPhase.signedIn, true) => const LbDesktopShell(),
+        (LbPhase.signedIn, false) => const LbHomePage(),
       },
     );
   }

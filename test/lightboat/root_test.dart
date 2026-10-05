@@ -47,7 +47,7 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const TestApp(child: LbRoot()),
+        child: const TestApp(child: LbRoot(desktop: false)),
       ),
     );
     await tester.pump();

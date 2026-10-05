@@ -168,7 +168,7 @@ User-Agent: Lightboat-Android/0.1.0 (Clash.Meta)
   - 线路列表**不显示**最终走直连的选项（`🎯 Direct`，以及类型为 Direct / Reject 的项），见 `lbLineChoices`。
   - **全局模式**：订阅里没有 `GLOBAL` 分组，mihomo 会自动生成一个，第一个选项是 `DIRECT`（`config/config.go`）。App 在配置的已选记录里把 `GLOBAL` 固定为 `🚀 Proxy`（`lbSelectedMap`），切到全局时若内核里还不是，就立即改过来。0.3.0 及以前没有这一步，「全局」实际是全部直连（2026-10-05 运营方在国内的 Windows 上遇到：测速正常、浏览器和 Telegram 打不开）。
 - 规则集（`rule-providers`）从 **`cdn.jsdmirror.com`**（国内可访问的 jsDelivr 镜像）下载，共 20 个，合计 5.3 MB。内核第一次加载配置时要全部下载完才回应，网络慢就会超时（2026-10-04 在 AWS Windows 上出现「Core did not answer setupConfig」）。
-  - **App 内置了一份**（`assets/lightboat/rules/`，gzip 后约 0.8 MB）：创建或刷新配置时，`lbSeedRuleSets` 把缺少的规则文件放到 FlClash 为每个规则集指定的路径（`profiles/providers/<配置 ID>/rules/md5(名字@地址)`），并把修改时间设为 2000 年，内核先用本地文件、再立刻在后台更新。已有的文件不覆盖。
+  - **App 内置了一份**（`assets/lightboat/rules/`，2026-10-05 起是白名单的 4 个 `.mrs`，gzip 后 0.58 MB）：创建或刷新配置时，`lbSeedRuleSets` 把缺少的规则文件放到 FlClash 为每个规则集指定的路径（`profiles/providers/<配置 ID>/rules/md5(名字@地址)`），并把修改时间设为 2000 年，内核先用本地文件、再立刻在后台更新。已有的文件不覆盖。
   - **面板模板的规则集名字或地址变了，要重新打包**：`python3 tool/lightboat/bundle_rules.py`（默认读主项目的 `deploy/templates/clash.gotmpl`）。不重新打包也不会出错，只是那几个规则集退回到首次下载。
   - 以后可以由面板托管规则集（02 §9 第 4 条），摆脱对镜像的依赖。
 - 配置里的 `tun`、`dns`、`mixed-port`、`external-controller` 等设置，FlClash 会按自己的 VPN 实现覆盖掉，沿用 FlClash 的处理即可。
@@ -343,6 +343,6 @@ rule-providers:
 
 ### 10.4 轻舟这边的后续
 
-- 下次发版前重跑 `python3 tool/lightboat/bundle_rules.py`，App 内置的规则换成这 4 个 `.mrs`（约 0.6 MB）；脚本已能处理 `type: http` 的任意格式，`inline` 的会跳过。模板上线到 App 发版之间，新安装的用户首次连接要先下载约 0.6 MB 名单，影响很小；
+- ~~下次发版前重跑 `python3 tool/lightboat/bundle_rules.py`~~：**2026-10-05 已在 `windows` 分支重新打包**，App 内置的规则换成这 4 个 `.mrs`（gzip 后 0.58 MB），随下一版发布；脚本已能处理 `type: http` 的任意格式，`inline` 的会跳过。模板上线到 App 发版之间，新安装的用户首次连接要先下载约 0.6 MB 名单，影响很小；
 - 以后要调整某个网站：只改 `lb_proxy` / `lb_direct`，然后 `mvpn templates`。
 

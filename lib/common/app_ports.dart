@@ -40,4 +40,7 @@ abstract interface class NavigationPort {
 
 WindowPort? windowPort;
 TrayPort? trayPort;
+
+/// Runs before a window close hides the app to the tray instead of exiting.
+Future<void> Function()? beforeHideToTray;
 NavigationPort? navigationPort;

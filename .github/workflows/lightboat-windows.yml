@@ -17,6 +17,8 @@ on:
       - 'pubspec.yaml'
       - 'pubspec.lock'
       - 'setup.dart'
+      - 'build_config.yaml'
+      - 'arb/**'
       - '.github/workflows/lightboat-windows.yml'
     tags:
       - 'lb-v*'

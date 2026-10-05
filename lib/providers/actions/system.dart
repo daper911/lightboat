@@ -110,6 +110,7 @@ class SystemAction extends _$SystemAction {
     if (ref.read(appSettingProvider).minimizeOnExit || !exit) {
       if (system.isDesktop) {
         await _savePreferencesSafely();
+        if (exit) await beforeHideToTray?.call();
       }
       await system.back();
       await windowPort?.hide();

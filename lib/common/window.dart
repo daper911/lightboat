@@ -55,7 +55,7 @@ class Window implements WindowPort {
       await desktopWindow.setTitleBarStyle(TitleBarStyle.hidden);
     }
     await desktopWindow.setSize(props.size);
-    await desktopWindow.setMinimumSize(const Size(380, 400));
+    await desktopWindow.setMinimumSize(const Size(880, 600));
     await _windowPosition(props);
     await desktopWindow.setPreventClose(true);
   }

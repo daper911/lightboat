@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:fl_clash/common/service_probe.dart';
@@ -14,18 +15,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum LbConnectPhase { disconnected, connecting, connected, failed }
 
+enum LbConnectFailure { start, portBusy }
+
 const _connectingFor = 1500;
 
-final lbConnectionProvider = NotifierProvider<LbConnection, bool>(
+final lbConnectionProvider = NotifierProvider<LbConnection, LbConnectFailure?>(
   LbConnection.new,
 );
+
+typedef LbPortProbe = Future<bool> Function(int port);
+
+/// Windows only: another proxy app holding the mixed port lets the Core start
+/// without a listener, which would look like a dead line.
+final lbPortProbeProvider = Provider<LbPortProbe?>(
+  (_) => Platform.isWindows ? lbPortIsFree : null,
+);
+
+Future<bool> lbPortIsFree(int port) async {
+  try {
+    final socket = await ServerSocket.bind(InternetAddress.loopbackIPv4, port);
+    await socket.close();
+    return true;
+  } on SocketException {
+    return false;
+  }
+}
 
 final lbConnectPhaseProvider = Provider<LbConnectPhase>((ref) {
   final runTime = ref.watch(runTimeProvider);
   if (runTime == null) {
-    return ref.watch(lbConnectionProvider)
-        ? LbConnectPhase.failed
-        : LbConnectPhase.disconnected;
+    return ref.watch(lbConnectionProvider) == null
+        ? LbConnectPhase.disconnected
+        : LbConnectPhase.failed;
   }
   return runTime < _connectingFor
       ? LbConnectPhase.connecting
@@ -33,9 +54,9 @@ final lbConnectPhaseProvider = Provider<LbConnectPhase>((ref) {
 });
 
 /// One-tap connect on top of FlClash's run state, which stays the source of
-/// truth. The state is whether the last start failed: on Android a refused
-/// VPN prompt or a dead profile shows up only as a start that never comes up.
-class LbConnection extends Notifier<bool> {
+/// truth. The state is why the last start failed: on Android a refused VPN
+/// prompt or a dead profile shows up only as a start that never comes up.
+class LbConnection extends Notifier<LbConnectFailure?> {
   static const _startTimeout = Duration(seconds: 20);
 
   bool _wantRunning = false;
@@ -44,12 +65,12 @@ class LbConnection extends Notifier<bool> {
   Timer? _startWatchdog;
 
   @override
-  bool build() {
+  LbConnectFailure? build() {
     _wantRunning = ref.read(isStartProvider);
     ref.listen(isStartProvider, (prev, next) {
       if (next) {
         _startWatchdog?.cancel();
-        state = false;
+        state = null;
         return;
       }
       _testedThisRun = false;
@@ -66,17 +87,36 @@ class LbConnection extends Notifier<bool> {
       }
     });
     ref.onDispose(() => _startWatchdog?.cancel());
-    return false;
+    return null;
   }
 
-  void _markFailed() {
+  void _markFailed([LbConnectFailure failure = LbConnectFailure.start]) {
     _wantRunning = false;
-    state = true;
+    state = failure;
   }
 
   void toggle() {
     final starting = !ref.read(isStartProvider);
-    state = false;
+    final probe = ref.read(lbPortProbeProvider);
+    if (starting && probe != null) {
+      unawaited(_startIfPortFree(probe));
+      return;
+    }
+    _toggle(starting);
+  }
+
+  Future<void> _startIfPortFree(LbPortProbe probe) async {
+    final free = await probe(ref.read(patchClashConfigProvider).mixedPort);
+    if (!ref.mounted || ref.read(isStartProvider)) return;
+    if (free) {
+      _toggle(true);
+    } else {
+      _markFailed(LbConnectFailure.portBusy);
+    }
+  }
+
+  void _toggle(bool starting) {
+    state = null;
     _wantRunning = starting;
     _startWatchdog?.cancel();
     _startRequestedAt = starting ? DateTime.now() : null;

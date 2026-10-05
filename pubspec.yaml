@@ -108,6 +108,7 @@ flutter:
     - assets/images/avatar/
     - assets/images/services/
     - assets/lightboat/rules/
+    - assets/lightboat/tray/
     - path: assets/images/tray/unix/
       platforms: [ linux ]
     - path: assets/images/tray/macos/
