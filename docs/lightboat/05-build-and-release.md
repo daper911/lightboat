@@ -79,6 +79,7 @@ https://cdn.cnbetx.com/lightboat/
 - **每个平台的条目带自己的 `version` / `build`**（两个平台的安装包不一定同时就绪，Windows 要等云端构建）；App 优先读本平台的，没有才读顶层。**顶层的 `version` / `build` 取两个平台中较旧的那个**：0.4.0 及以前的 App 只读顶层，这样某个平台的新包还没上传时只会晚一点提示，不会出现「更新了还是旧版」的循环（2026-10-05 出过一次：本地 pubspec 已升到 0.4.1，脚本却上传了云端构建的 0.4.0 Windows 包；已修，并加了 `--version`）；
 
 - `build` 是 `pubspec.yaml` 版本号 `+` 后面的数字，两个平台比较同一个数；低于 `min_build` 的版本强制更新（弹窗不能关闭）；
+- **安卓安装包里的 versionCode 不等于这个数**：按 CPU 架构分包时 Flutter 会加上「架构编号 × 1000」（arm64-v8a 是 2，所以 build 7 的 versionCode 是 2007）。App 比较前先对 1000 取余（`lbInstalledBuild`）；0.5.0 之前的安卓版没有这一步，读到的是 2005、2006，**永远不会提示更新**（2026-10-06 发现并修复）；
 - App（`lib/lightboat/update.dart`）进入首页后自动检查，最多 12 小时一次，有新版本才弹窗；「我的 → 检查更新」手动检查；
 - 第一版点「下载」用系统浏览器下载安装包（安卓下载完点通知安装，Windows 运行安装程序）。App 内下载、校验 sha256、直接调起安装留到以后（需要安卓安装权限）；
 - 发布：`python3 tool/lightboat/publish_r2.py --notes "…" --android dist/….apk --windows ….exe`（读 `key.env` 里的 R2 密钥，需要 `boto3`；只传一个平台时保留另一个平台的条目）。**上传的安装包不是本地刚构建的（例如从 Actions 下载的 Windows 包）时，必须用 `--version X.Y.Z+N` 写明它的版本**，否则会按本地 `pubspec.yaml` 的版本命名。

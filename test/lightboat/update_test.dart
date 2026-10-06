@@ -153,4 +153,10 @@ void main() {
     await tester.pump();
     expect(find.text(LbStrings.upToDate), findsOneWidget);
   });
+
+  test('reads the plain build out of an Android per-ABI versionCode', () {
+    expect(lbInstalledBuild('2007'), 7);
+    expect(lbInstalledBuild('7'), 7);
+    expect(lbInstalledBuild(''), 0);
+  });
 }

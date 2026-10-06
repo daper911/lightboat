@@ -82,6 +82,12 @@ Future<LbRelease?> lbFetchRelease({
   );
 }
 
+/// Android's split-per-ABI build adds 1000 × the ABI code to the versionCode
+/// (arm64-v8a turns build 7 into 2007), while `latest.json` carries the
+/// plain build of the shared pubspec version.
+int lbInstalledBuild(String buildNumber) =>
+    (int.tryParse(buildNumber) ?? 0) % 1000;
+
 const _checkedAtKey = 'lb_update_checked_at';
 const _autoCheckEvery = Duration(hours: 12);
 
@@ -99,7 +105,7 @@ Future<void> lbCheckForUpdate(
     if (now - last < _autoCheckEvery.inMilliseconds) return;
     await prefs.setInt(_checkedAtKey, now);
   }
-  final current = int.tryParse(globalState.packageInfo.buildNumber) ?? 0;
+  final current = lbInstalledBuild(globalState.packageInfo.buildNumber);
   final LbRelease? release;
   try {
     release = await fetch();

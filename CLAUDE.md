@@ -45,6 +45,9 @@
 - **安卓下一步：深色模式逐页检查**（要运营方在手机上切到深色模式截图）；之后按运营方反馈继续打磨，或回到后台保活引导、自动连接。
 - 2026-10-05：**W1–W3 代码完成（`windows` 分支，待运营方实测）**。W1：安装包 / 进程 / 图标 / 数据目录换成轻舟（AppId `E45C…`、发布者 `QINZHOU NETWORK CO.LLC`，运营方确认），卸载与升级时关闭指向 7890 的系统代理、删除开机自启，UA 带平台名；W2：`lib/lightboat/desktop/` 桌面界面（侧边栏 + 首页 / 线路 / 购买 / 我的，宽屏登录注册，付款对话框），轻舟托盘（`LbTray`），关闭缩到托盘时第一次说明，窗口 1080×720、最小 880×600；W3：「我的 → Windows 设置」、端口占用提示。对 FlClash 的改动见 `upstream-patches.md` 的 Windows 节。**运营方要求：Windows 全部功能做完、实测通过后再合并进 `main` 推送**；`windows` 分支每次推送都会云端构建（run 37366818343 是 W1 的第一次构建，通过；W1–W3 完整版是 run 37413614765，通过）。R2 上 FlClash 身份的 Windows 0.4.1 包，等轻舟版测过后直接替换（运营方确认没有别人装过）。运营方用国内网络的 Windows 电脑测试。
 - **Windows 下一步：运营方实测 `windows` 分支的安装包**（W5：W-I、W-A、W-C、W-W、W-S、W-P），按反馈修改；通过后合并进 `main`、发版并替换 R2 上的 Windows 包。
+- 2026-10-06：共用逻辑优化（两个平台）：线路不通时若套餐过期 / 流量用完就直接说明并给「续费」；只有一个面板地址时不再探测心跳；套餐用量每 30 分钟单独刷新；同步失败且登录过期时提示可能要重新登录。主项目上线了面板域名直连和「自动选择最快」的测速参数（02 §11、§12；需要面板配合的事项现在写进主项目 `docs/roadmap/lightboat-requests.md`）。
+- 2026-10-06：**开始 0.5.0（两个平台一起发，运营方决定）**：`windows` 分支已快进合并进 `main`，版本号 `0.5.0+7`；**正式签名证书已生成**（05 §1：指纹、三处保管、恢复方法），正式包名 `com.lightboat.app`。运营方暂时没有 Windows 测试条件，**Windows 0.5.0 未经实测**，发布后先不对外推广。证书文件暂存在仓库根目录 `signing-backup/`（不进 git），**运营方存进 1Password 后删除**（运营方 2026-10-06 说先留两天）。
+- **0.5.0 下一步**：运营方在手机上回归测试正式签名的安卓包（装上后与测试版 `.dev` 并存，测完卸载测试版）→ 推送 `main`、云端构建 Windows → 两端安装包传 R2 并更新 `latest.json`（替换 FlClash 身份的旧 Windows 包）。
 - 完成一个里程碑，就更新本节。
 
 ## 3. 硬性约束
@@ -80,6 +83,7 @@
 | 内置根证书 | `lib/lightboat/trust.dart` 内置 ISRG Root X1 / X2，因为全新 Windows 可能没有面板证书的根证书。**面板或订阅域名换证书机构（不再是 Let's Encrypt）时，要先把新的根证书加进这个文件** |
 | 品牌色 | 主色 `#006C6C`（深色模式 `#65BCB7`），背景 `#FAF6EE` / `#08131A`，朱砂 `#C5372F`（Logo 与警示） |
 | 工具链 | Flutter 3.47.4、Go 1.26.4、JDK 17、compileSdk 37、NDK 28.2.13676358、Rust stable |
+| 安卓正式签名 | 证书指纹 SHA-256 `1F:69:E4:24:…:85:88:95:CB`（全文见 05 §1）；工作副本 `android/app/keystore.jks` + `android/local.properties`，主副本 `~/.lightboat/`，加密备份在 R2 私有桶 `mvpn-backups/lightboat-signing/`，运营方另存 1Password。**证书丢了用户就无法升级，绝不进 git** |
 | Windows 安装包 AppId | `{E45C3C6D-2F4C-4941-94D7-12924C55563A}`，**首次对外发布后永不修改** |
 | Windows 进程名 | `Lightboat.exe`、`LightboatCore.exe`、`LightboatHelperService`（W1 改名，运营方已确认） |
 | Windows 构建 | GitHub Actions `lightboat-windows`：推送到 `main`（相关路径）、推送 `lb-v*` 标签或手动触发；产物在该次运行页面底部的 Artifacts |
