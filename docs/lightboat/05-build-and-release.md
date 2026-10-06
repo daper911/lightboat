@@ -4,34 +4,35 @@
 
 安卓用签名证书识别「同一个 App」。**证书丢了，已安装的用户就无法升级**，只能卸载重装（会丢失登录状态和设置）；证书泄露，别人就能做出冒充轻舟的「升级包」。
 
-生成（在构建容器里执行，AI 来做）：
+**2026-10-06 已生成**（运营方确认按以下参数）：PKCS12，RSA 4096，别名 `lightboat`，有效期到 2056-11-17（30 年；安卓只要求晚于 2033 年），主体 `CN=Lightboat, O=QINZHOU NETWORK CO.LLC`（公司名已作为 Windows 安装包发布者公开，所以写上；任何人都能从 APK 里读到主体信息）。证书指纹（SHA-256，公开信息，用来核对安装包是否正式签名）：
 
-```bash
-keytool -genkeypair -v -keystore lightboat-release.jks -alias lightboat \
-  -keyalg RSA -keysize 4096 -validity 36500 \
-  -dname "CN=Lightboat"
+```
+1F:69:E4:24:A5:76:03:0B:FF:DC:18:C1:9E:CA:22:2A:64:20:26:B6:02:E7:2C:D6:8E:2B:C1:1A:85:88:95:CB
 ```
 
-证书里的主体信息（`-dname`）任何人都能从 APK 里读出来，所以只写品牌名，不写公司名或个人信息。
+生成命令（以后换证书时参考；**证书一旦用于发布就不要再换**）：
 
-保管规则：
+```bash
+keytool -genkeypair -keystore android/app/keystore.jks -storetype PKCS12 -alias lightboat \
+  -keyalg RSA -keysize 4096 -validity 11000 \
+  -dname "CN=Lightboat, O=QINZHOU NETWORK CO.LLC" \
+  -storepass:file <密码文件> -keypass:file <密码文件>
+```
+
+PKCS12 格式要求证书密码和密钥密码相同。
+
+保管（三处，至少一处不在服务器上）：
 
 | 存放位置 | 内容 | 说明 |
 |---|---|---|
-| 开发机（仓库外） | `~/.lightboat/lightboat-release.jks` 与密码文件 | 构建时挂载进容器；**绝不提交到 git**（`.gitignore` 里加上 `*.jks`、`local.properties`、`key.properties`） |
-| 运营方本人 | 证书文件与三个密码（store、key、alias） | 存进密码管理器或网盘的加密目录。**这是唯一能救命的副本** |
-| Cloudflare R2 | 加密后的证书 | 可以复用主项目的异地备份方式（openssl 加密后上传），与面板备份分开存放 |
+| 服务器，工作副本 | `android/app/keystore.jks`；密码在 `android/local.properties`（`storePassword`、`keyAlias`、`keyPassword`） | 构建正式包时直接读取；两者都被 `.gitignore` 排除，权限 600。**绝不提交到 git** |
+| 服务器，仓库外主副本 | `~/.lightboat/lightboat-release.jks`、`~/.lightboat/signing.properties` | 防止清理仓库目录时误删工作副本 |
+| 运营方的 1Password | 证书文件（附件）与密码、别名、R2 备份解密口令 | **这是唯一能救命的副本**。2026-10-06 已准备好文件（仓库根目录的 `signing-backup/`，只在本机、被 `.git/info/exclude` 排除），运营方说晚一点上传；**上传后删除 `signing-backup/`** |
+| Cloudflare R2 私有桶 `mvpn-backups` | `lightboat-signing/lightboat-keystore-20261006.jks.enc`（openssl AES-256-CBC、PBKDF2 60 万次） | 解密口令在 `key.env` 的 `LIGHTBOAT_SIGNING_PASSPHRASE` 和 1Password；上传后下载解密核对过，与原件一致。**不要放进公开桶 `qzvpn`** |
 
-FlClash 的构建脚本从 `android/app/keystore.jks` 和 `android/local.properties` 读取签名信息：
+恢复：从 R2 下载 → `openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in <文件> -out android/app/keystore.jks -pass pass:<口令>` → 按 1Password 里的密码写回 `android/local.properties`。
 
-```properties
-# android/local.properties（不提交）
-storePassword=...
-keyAlias=lightboat
-keyPassword=...
-```
-
-构建前把证书拷到（或软链接到）`android/app/keystore.jks`，构建完删除。
+FlClash 的构建脚本（`android/app/build.gradle.kts`）发现 `android/app/keystore.jks` 和这三项密码齐全时，正式构建用正式签名和正式包名 `com.lightboat.app`；缺任何一项就退回开发签名并加 `.dev` 后缀。**构建后要核对包名和证书指纹**（`apksigner verify --print-certs`）。
 
 ## 2. 版本号
 
