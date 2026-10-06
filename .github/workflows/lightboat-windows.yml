@@ -82,7 +82,10 @@ jobs:
 
       # Builds the core, helper service and app, then packages dist/*.exe (Inno
       # Setup, preinstalled on the runner) and dist/*.zip.
+      # A hang here fails on its own with logs, before the 60-minute job
+      # limit or a lost runner leaves nothing to read (run 37371677498).
       - name: Build and package
+        timeout-minutes: 40
         run: dart setup.dart windows -v
 
       - name: Checksums
