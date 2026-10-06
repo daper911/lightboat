@@ -25,7 +25,8 @@
 | 购买 / 续费、付款（USDT 二维码，支付宝 / 微信跳浏览器） | `logic/purchase.dart` | ✅ | 🧪 | |
 | 启动时套餐提醒（每天一次） | `logic/plan.dart`、`widgets/prompts.dart` | ✅ | 🧪 | 弹窗共用 |
 | 公告列表、popup 公告弹一次 | `logic/account.dart`、`widgets/prompts.dart` | ✅ | 🧪 | popup 弹窗共用；桌面的公告列表是对话框 |
-| 检查更新（`latest.json`，浏览器下载） | `update.dart` | ✅ | 🧪 | 按平台读各自的条目 |
+| 检查更新（`latest.json`，浏览器下载） | `update.dart` | ✅ | 🧪 | 按平台读各自的条目；安卓 0.5.0 起才真正生效（之前 versionCode 带架构编号，永远判断为不需要更新，05 §4） |
+| 应用内下载并校验 SHA256、运行期间定时检测更新 | — | ⏳ | ⏳ | 运营方 2026-10-06 决定不放进 0.5.0，以后做 |
 | 导出日志（打码） | `diagnostics.dart` | ✅ | 🧪 | Windows 的保存位置待实测 |
 | 内置规则集（首次连接不用下载） | `rules.dart` | ✅ | 🧪 | 白名单上线后要重新打包（02 §10.4） |
 | 内置根证书 | `trust.dart` | ✅ | 🧪 | |
