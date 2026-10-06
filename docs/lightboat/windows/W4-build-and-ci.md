@@ -41,7 +41,7 @@ curl -s "https://api.github.com/repos/daper911/lightboat/actions/workflows/light
 | 免安装版 | `Lightboat-<版本>-windows-amd64.zip` | 解压即用，适合不想安装的用户；没有后台服务（不能用 TUN），系统代理模式正常 |
 | 校验 | `SHA256SUMS` | |
 
-文件名格式在 W1 品牌化时通过 `make_config.yaml` 与 `setup.dart` 的输出命名统一调整，以实际产物为准并回写本表。
+文件名格式在 W1 品牌化时通过 `make_config.yaml` 与 `setup.dart` 的输出命名统一调整，以实际产物为准并回写本表。**2026-10-06 实际产物（run 37413614765）**：里面的程序、文件属性、安装信息都已是轻舟，但 Artifacts 里的文件名仍是 `FlClash-0.4.1-windows-amd64-setup.exe` / `.zip`（打包工具另有命名来源，还没改）；上传 R2 时改名为 `Lightboat-…`。测试包放在 `cdn.cnbetx.com/lightboat/test/windows-run9/`，不动 `latest.json`。
 
 安装包的固定信息（W1 写进 `make_config.yaml`）：
 
