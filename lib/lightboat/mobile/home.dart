@@ -75,7 +75,9 @@ class LbHomePage extends ConsumerWidget {
             if (session.syncing || session.syncError != null) ...[
               const SizedBox(height: 16),
               Text(
-                session.syncing ? LbStrings.syncing : LbStrings.syncFailed,
+                session.syncing
+                    ? LbStrings.syncing
+                    : LbStrings.syncFailedFor(hasJwt: session.hasJwt),
                 textAlign: TextAlign.center,
                 style: context.textTheme.bodySmall?.copyWith(
                   color: colors.muted,

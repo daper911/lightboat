@@ -42,7 +42,9 @@ class LbDesktopHome extends ConsumerWidget {
         if (session.syncing || session.syncError != null) ...[
           const SizedBox(height: 12),
           Text(
-            session.syncing ? LbStrings.syncing : LbStrings.syncFailed,
+            session.syncing
+                ? LbStrings.syncing
+                : LbStrings.syncFailedFor(hasJwt: session.hasJwt),
             style: context.textTheme.bodySmall?.copyWith(color: colors.muted),
           ),
         ],

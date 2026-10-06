@@ -91,6 +91,11 @@ abstract final class LbStrings {
   static const loginExpired = '登录已过期，请重新登录（连接不受影响）';
   static const relogin = '重新登录';
   static const syncFailed = '暂时无法更新线路，已使用上次的配置';
+
+  /// Without a JWT the app cannot learn a subscription link reset on the
+  /// website, and the subscription server answers a dead token with HTTP 500.
+  static String syncFailedFor({required bool hasJwt}) =>
+      hasJwt ? syncFailed : '$syncFailed。如果在官网重置过订阅链接，请重新登录';
   static const syncing = '正在更新线路…';
   static const refreshDone = '套餐和线路已更新';
 

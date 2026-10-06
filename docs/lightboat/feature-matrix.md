@@ -13,6 +13,8 @@
 | 登录（含滑块验证码）、登录状态恢复、退出 | `session.dart`、`logic/account.dart`、`widgets/captcha.dart` | ✅ | 🧪 | 登录失效只清登录，不断连接 |
 | 注册（邮箱验证码、邀请码） | 同上 | ✅ | 🧪 | |
 | 自动拉订阅、定时更新（启动、每 6 小时、回到前台超过 1 小时） | `session.dart` | ✅ | 🧪 | 没有界面 |
+| 套餐用量单独刷新：每 30 分钟，或回到前台时超过 30 分钟（只拉套餐列表，不重新拉节点） | `session.dart`（`refreshPlanIfStale`）、`root.dart` | 🧪 | 🧪 | 2026-10-06 |
+| 更新线路失败且登录已过期时，提示「如果在官网重置过订阅链接，请重新登录」 | `strings.dart`（`syncFailedFor`） | 🧪 | 🧪 | 2026-10-06；订阅服务器对失效链接返回 HTTP 500，和服务器故障分不开，所以只在没有登录时提示 |
 | 一键连接 / 断开、启动失败与重试 | `logic/connection.dart` | ✅ | 🧪 | 安卓多一步 VPN 授权说明 |
 | 代理模式：智能分流 / 全局 | `logic/connection.dart` | ✅ | 🧪 | 全局跟随线路 |
 | 线路选择、测延迟、连接后自动测一次、出口地区 | `logic/connection.dart` | ✅ | 🧪 | 线路列表隐藏直连 |

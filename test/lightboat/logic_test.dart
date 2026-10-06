@@ -115,4 +115,9 @@ void main() {
       'Lightboat-Android/0.5.0 (Clash.Meta)',
     );
   });
+
+  test('asks for a new login only when a failed sync has no JWT', () {
+    expect(LbStrings.syncFailedFor(hasJwt: true), LbStrings.syncFailed);
+    expect(LbStrings.syncFailedFor(hasJwt: false), contains('重新登录'));
+  });
 }

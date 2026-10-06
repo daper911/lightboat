@@ -79,9 +79,14 @@ final lbSessionProvider = NotifierProvider<LbSession, LbSessionState>(
 );
 
 class LbSession extends Notifier<LbSessionState> {
+  /// The plan card's usage may lag the panel by this much; a full refresh
+  /// (with the profile) only runs every six hours.
+  static const planMaxAge = Duration(minutes: 30);
+
   String? _jwt;
   LbSiteConfig? _site;
   Future<void>? _refreshing;
+  DateTime? _planFetchedAt;
 
   PanelApi get _api => ref.read(lbPanelApiProvider);
 
@@ -157,6 +162,7 @@ class LbSession extends Notifier<LbSessionState> {
   Future<void> _signIn(String email, String jwt) async {
     _jwt = jwt;
     final subscriptions = await _api.subscriptions(jwt);
+    _planFetchedAt = DateTime.now();
     final subscription = pickSubscription(subscriptions);
     state = LbSessionState(
       phase: LbPhase.signedIn,
@@ -183,6 +189,7 @@ class LbSession extends Notifier<LbSessionState> {
       if (fetchAccount && jwt != null) {
         try {
           final subscriptions = await _api.subscriptions(jwt);
+          _planFetchedAt = DateTime.now();
           final picked = pickSubscription(
             subscriptions,
             preferredId: state.subscription?.id,
@@ -207,6 +214,39 @@ class LbSession extends Notifier<LbSessionState> {
       state = state.copyWith(syncError: error);
     } finally {
       state = state.copyWith(syncing: false);
+    }
+  }
+
+  /// Fetches only the plan list, skipping the profile, unless it is fresh or
+  /// a full refresh is already under way.
+  Future<void> refreshPlanIfStale({DateTime? now}) async {
+    final jwt = _jwt;
+    final at = now ?? DateTime.now();
+    final fetched = _planFetchedAt;
+    if (state.phase != LbPhase.signedIn || jwt == null || _refreshing != null) {
+      return;
+    }
+    if (fetched != null && at.difference(fetched) < planMaxAge) return;
+    _planFetchedAt = at;
+    try {
+      final subscriptions = await _api.subscriptions(jwt);
+      final previous = state.subscription;
+      final picked = pickSubscription(subscriptions, preferredId: previous?.id);
+      state = state.copyWith(
+        subscriptions: subscriptions,
+        subscription: picked,
+        clearSubscription: picked == null,
+      );
+      await _persist();
+      if (picked != null && picked.token != previous?.token) {
+        unawaited(refresh(fetchAccount: false));
+      }
+    } on PanelException catch (error) {
+      if (error.isAuthExpired) {
+        await _expireJwt();
+      } else {
+        commonPrint.log('lightboat plan refresh: $error');
+      }
     }
   }
 

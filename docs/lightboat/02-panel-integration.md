@@ -24,7 +24,7 @@
 | 获取滑块验证码 | `GET /v1/common/captcha/slide` | 否 | P0 |
 | 校验滑块 | `POST /v1/common/captcha/slide/verify` | 否 | P0 |
 | 登录 | `POST /v1/auth/login` | 否 | P0 |
-| 用户信息 | `GET /v1/public/user/info` | 是 | P0 |
+| 用户信息 | `GET /v1/public/user/info` | 是 | 暂未使用（登录邮箱取自用户输入；2026-10-06 删掉了没被调用的客户端代码） |
 | 我的订阅（含订阅 token、到期、流量） | `GET /v1/public/user/subscribe` | 是 | P0 |
 | 公告 | `GET /v1/public/announcement/list?page=1&size=20` | 是 | P1 |
 | 心跳（探测面板地址是否可用） | `GET /v1/common/heartbeat` | 否 | P0（域名容灾用） |
@@ -255,6 +255,7 @@ User-Agent: Lightboat-Android/0.1.0 (Clash.Meta)
 | 3 | 备用面板地址（另一个域名，最好走 CDN）与远程地址列表（见 [03 §5](03-architecture.md)） | 正式发布前 |
 | 4 | 规则名单同步到自己的 R2（每天一次的定时任务），模板改指向 `cdn.cnbetx.com`，摆脱对 cdn.jsdmirror.com 的依赖 | 可选，§10 上线后 |
 | 6 | ~~改成白名单分流~~：**已上线**（2026-10-05，见 §10） | 已完成 |
+| 7 | **面板域名直连（运营方 2026-10-06 决定，方案 A）**：模板的「强制直连」小名单加 `DOMAIN-SUFFIX,cnbetx.com`，见 §11 | 尽快 |
 | 5 | 订阅模板里给 App 单独一套（如果以后需要和 FlClash 用户的配置不同）：在面板「订阅模板」里加一行 UA 匹配 `Lightboat` | 可选 |
 
 ## 10. 白名单分流（2026-10-05 已上线）
@@ -345,4 +346,42 @@ rule-providers:
 
 - ~~下次发版前重跑 `python3 tool/lightboat/bundle_rules.py`~~：**2026-10-05 已在 `windows` 分支重新打包**，App 内置的规则换成这 4 个 `.mrs`（gzip 后 0.58 MB），随下一版发布；脚本已能处理 `type: http` 的任意格式，`inline` 的会跳过。模板上线到 App 发版之间，新安装的用户首次连接要先下载约 0.6 MB 名单，影响很小；
 - 以后要调整某个网站：只改 `lb_proxy` / `lb_direct`，然后 `mvpn templates`。
+
+## 11. 面板域名直连（待主项目执行）
+
+**问题**（2026-10-06 核实代码）：连接状态下，轻舟 App 自己的请求（登录、刷新套餐、拉套餐列表、下单付款、检查更新）也经过内核：FlClash 的 `lib/common/http.dart` 让 Dart 的 HTTP 走本地混合端口，安卓上 `VpnService.kt` 还强制把 App 自己放进 VPN。按白名单规则，`cnbetx.com` 不在国内名单里，于是**走节点**。节点不通时（包括套餐过期、流量用完后节点拒绝连接），App 连面板也连不上：首页提示「连不上：套餐已过期」并给出「续费」，点进去购买页却加载失败，只能先断开再续费；刚续完费也刷新不到。
+
+**决定**（运营方 2026-10-06，方案 A）：面板相关域名一律直连。面板就在 HK1 上，和香港节点同一台机器，直连和走节点经过的是同一段跨境网络，不会更不稳定。不选「客户端自己加规则」（要改 FlClash 的配置覆盖并发版）。
+
+### 11.1 修改
+
+`deploy/templates/clash.gotmpl` 的 `rule-providers` 里，把
+
+```yaml
+  lb_direct:
+    type: inline
+    behavior: classical
+    payload: []
+```
+
+改成
+
+```yaml
+  lb_direct:
+    type: inline
+    behavior: classical
+    payload:
+      - DOMAIN-SUFFIX,cnbetx.com
+```
+
+`rules` 不用改（`RULE-SET, lb_direct, DIRECT` 已经排在国内名单和 `MATCH` 之前）。`cnbetx.com` 覆盖面板 `ssr.`、订阅 `sub.`、安装包 `cdn.`、官网 `home.` 和分流自检页 `test.`。
+
+### 11.2 上线
+
+1. 修改并提交模板，在面板服务器上 `sudo mvpn templates`；
+2. 用测试账号以 Clash UA 拉订阅，确认 `lb_direct` 里有这一行；
+3. 轻舟里「刷新套餐和线路」，连接后导出日志，访问面板的请求应显示 `match RuleSet(lb_direct) using DIRECT`；
+4. 回退：把 `payload` 改回 `[]`，再 `mvpn templates`。
+
+影响：所有 Clash 系客户端访问这几个域名都直连（包括用户用浏览器开官网）；将来域名在国内被封时直连会失败，那时要靠备用域名（§9 第 3 条）。轻舟 App 不用发版，最晚 6 小时自动生效。
 

@@ -371,17 +371,6 @@ class PanelApi {
     ];
   }
 
-  Future<String?> email(String jwt) async {
-    final data = await _call('GET', '/v1/public/user/info', token: jwt) as Map?;
-    final methods = data?['auth_methods'] as List? ?? const [];
-    for (final method in methods) {
-      if (method is Map && method['auth_type'] == 'email') {
-        return method['auth_identifier'] as String?;
-      }
-    }
-    return null;
-  }
-
   Future<LbSiteConfig> siteConfig() async {
     final data = await _call('GET', '/v1/common/site/config') as Map?;
     return LbSiteConfig.fromPanel(

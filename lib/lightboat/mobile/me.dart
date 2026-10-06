@@ -98,10 +98,13 @@ class _LbMePageState extends ConsumerState<LbMePage> {
     final session = ref.read(lbSessionProvider.notifier);
     await session.refresh();
     if (!mounted) return;
-    final failed = ref.read(lbSessionProvider).syncError != null;
+    final state = ref.read(lbSessionProvider);
+    final failed = state.syncError != null;
     lbToast(
       context,
-      failed ? LbStrings.syncFailed : LbStrings.refreshDone,
+      failed
+          ? LbStrings.syncFailedFor(hasJwt: state.hasJwt)
+          : LbStrings.refreshDone,
       error: failed,
     );
   }

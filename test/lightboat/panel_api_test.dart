@@ -213,21 +213,6 @@ void main() {
     );
   });
 
-  test('reads the login email from the auth methods', () async {
-    build({
-      '/v1/public/user/info': (
-        200,
-        _ok({
-          'auth_methods': [
-            {'auth_type': 'mobile', 'auth_identifier': '123'},
-            {'auth_type': 'email', 'auth_identifier': 'a@b.c'},
-          ],
-        }),
-      ),
-    });
-    expect(await api.email('jwt'), 'a@b.c');
-  });
-
   test('runs the captcha and registration calls', () async {
     build({
       '/v1/common/captcha/slide': (

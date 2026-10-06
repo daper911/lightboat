@@ -76,11 +76,18 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
   static const _refreshAfter = Duration(hours: 1);
   DateTime _lastRefresh = DateTime.now();
   bool _promptsShown = false;
+  Timer? _planTimer;
+
+  LbSession get _session => ref.read(lbSessionProvider.notifier);
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _planTimer = Timer.periodic(
+      LbSession.planMaxAge,
+      (_) => unawaited(_session.refreshPlanIfStale()),
+    );
   }
 
   Future<void> _runStartupPrompts() async {
@@ -109,6 +116,7 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _planTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -117,9 +125,12 @@ class _LbRootState extends ConsumerState<LbRoot> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state != AppLifecycleState.resumed) return;
     final now = DateTime.now();
-    if (now.difference(_lastRefresh) < _refreshAfter) return;
+    if (now.difference(_lastRefresh) < _refreshAfter) {
+      unawaited(_session.refreshPlanIfStale());
+      return;
+    }
     _lastRefresh = now;
-    unawaited(ref.read(lbSessionProvider.notifier).refresh());
+    unawaited(_session.refresh());
   }
 
   @override

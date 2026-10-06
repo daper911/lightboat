@@ -91,10 +91,13 @@ class _LbDesktopMeState extends ConsumerState<LbDesktopMe> {
     lbToast(context, LbStrings.syncing);
     await _session.refresh();
     if (!mounted) return;
-    final failed = ref.read(lbSessionProvider).syncError != null;
+    final state = ref.read(lbSessionProvider);
+    final failed = state.syncError != null;
     lbToast(
       context,
-      failed ? LbStrings.syncFailed : LbStrings.refreshDone,
+      failed
+          ? LbStrings.syncFailedFor(hasJwt: state.hasJwt)
+          : LbStrings.refreshDone,
       error: failed,
     );
   }

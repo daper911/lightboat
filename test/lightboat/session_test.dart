@@ -76,6 +76,49 @@ void main() {
       expect(state().phase, LbPhase.signedOut);
     });
 
+    test('refreshes only the plan, once it is stale', () async {
+      store.saved = const LbStoredSession(
+        jwt: 'jwt',
+        email: 'a@example.com',
+        subscription: _plan,
+        subscriptions: [_plan],
+      );
+      await session().restore();
+      const used = LbSubscription(
+        id: 9,
+        planId: 3,
+        token: 't',
+        name: '基础版',
+        status: LbPlanStatus.active,
+        expireTime: 0,
+        traffic: 0,
+        upload: 0,
+        download: 5,
+      );
+      final start = DateTime(2026, 10, 6, 12);
+      api.subscriptionList = const [used];
+      await session().refreshPlanIfStale(now: start);
+      expect(state().subscription?.used, 5);
+
+      api.subscriptionList = const [_plan];
+      await session().refreshPlanIfStale(
+        now: start.add(const Duration(minutes: 10)),
+      );
+      expect(state().subscription?.used, 5);
+      await session().refreshPlanIfStale(
+        now: start.add(const Duration(minutes: 31)),
+      );
+      expect(state().subscription?.used, 0);
+      expect(store.saved.subscription?.used, 0);
+
+      api.subscriptionsError = 40002;
+      await session().refreshPlanIfStale(
+        now: start.add(const Duration(minutes: 62)),
+      );
+      expect(state().hasJwt, isFalse);
+      expect(state().phase, LbPhase.signedIn);
+    });
+
     test('a subscription alone keeps the user signed in', () async {
       store.saved = const LbStoredSession(subscription: _plan);
       await session().restore();
