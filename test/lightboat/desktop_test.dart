@@ -1,3 +1,5 @@
+import 'package:fl_clash/common/service_probe.dart';
+import 'package:fl_clash/providers/routed_probe.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/icons/icons.dart';
 import 'package:fl_clash/lightboat/api/commerce.dart';
@@ -247,6 +249,42 @@ void main() {
     expect(FakeCommonAction.toggles, 0);
     expect(find.text(LbStrings.portBusy(7890)), findsOneWidget);
     expect(await tester.runAsync(() => lbPortIsFree(0)), isTrue);
+  });
+
+  testWidgets('a dead line on a used-up plan points to the renewal', (
+    tester,
+  ) async {
+    FakeProbe.initial = const RoutedProbeState({
+      routedOutbound: ProbeEntry(phase: ProbePhase.failed),
+    });
+    addTearDown(() => FakeProbe.initial = const RoutedProbeState({}));
+    const usedUp = LbSubscription(
+      id: 9,
+      planId: 3,
+      token: 't',
+      name: '基础版',
+      status: LbPlanStatus.active,
+      expireTime: 0,
+      traffic: 100 * _gb,
+      upload: 0,
+      download: 100 * _gb,
+    );
+    store.saved = const LbStoredSession(
+      jwt: 'jwt',
+      email: 'a@example.com',
+      subscription: usedUp,
+      subscriptions: [usedUp],
+    );
+    await container.read(lbSessionProvider.notifier).restore();
+    container.read(runTimeProvider.notifier).value = 5000;
+    await pump(tester, const LbDesktopShell());
+
+    expect(find.text(LbStrings.lineDownExhausted), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, LbStrings.renewPlan));
+    await tester.pump();
+    expect(container.read(lbDesktopNavProvider).tab, LbDesktopTab.purchase);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 15));
   });
 
   testWidgets('the lines table switches and tests lines', (tester) async {

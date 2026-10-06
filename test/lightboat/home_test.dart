@@ -278,6 +278,21 @@ void main() {
     expect(RecordingProxies.calls.last, 'test 3 proxies');
   });
 
+  testWidgets('a dead line on an expired plan points to the renewal', (
+    tester,
+  ) async {
+    FakeProbe.initial = const RoutedProbeState({
+      routedOutbound: ProbeEntry(phase: ProbePhase.failed),
+    });
+    await pumpHome(tester, plan: _plan(expireInDays: -1), runTime: 5000);
+
+    expect(find.text(LbStrings.lineDownExpired), findsOneWidget);
+    expect(find.text(LbStrings.lineDown), findsNothing);
+    await tester.tap(find.text(LbStrings.renewPlan));
+    await tester.pumpAndSettle();
+    expect(find.byType(LbPurchasePage), findsOneWidget);
+  });
+
   testWidgets('a failed exit probe offers a retry', (tester) async {
     FakeProbe.initial = const RoutedProbeState({
       routedOutbound: ProbeEntry(phase: ProbePhase.failed),

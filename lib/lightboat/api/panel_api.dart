@@ -124,9 +124,12 @@ class PanelApi {
 
   String get panelUrl => _panelUrl ?? _panelUrls.first;
 
+  /// With one panel there is nothing to choose, and the heartbeat would only
+  /// add a round trip before every first request.
   Future<String> _resolvePanel() async {
     final known = _panelUrl;
     if (known != null) return known;
+    if (_panelUrls.length == 1) return _panelUrls.single;
     for (final url in _panelUrls) {
       try {
         final response = await _dio.get<Object?>('$url/v1/common/heartbeat');

@@ -369,6 +369,12 @@ class _LineStripState extends ConsumerState<_LineStrip>
     final running = ref.watch(isStartProvider);
     final location = ref.watch(lbExitProbeProvider);
     final countryCode = location.value?.countryCode;
+    final subscription = ref.watch(
+      lbSessionProvider.select((state) => state.subscription),
+    );
+    final blocked = location.phase == ProbePhase.failed
+        ? lbPlanBlockReason(subscription, DateTime.now())
+        : null;
     final labelStyle = textTheme.bodyMedium?.copyWith(color: colors.muted);
     final valueStyle = textTheme.bodyLarge?.copyWith(
       color: colors.ink,
@@ -399,14 +405,29 @@ class _LineStripState extends ConsumerState<_LineStrip>
             const SizedBox(width: 20),
             if (location.phase == ProbePhase.failed) ...[
               Text(
-                LbStrings.lineDown,
+                blocked ?? LbStrings.lineDown,
                 style: valueStyle?.copyWith(color: colors.seal),
               ),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: colors.seal),
-                onPressed: retryExitProbe,
-                child: const Text(LbStrings.retry),
-              ),
+              if (blocked != null && subscription != null)
+                TextButton(
+                  style: TextButton.styleFrom(foregroundColor: colors.seal),
+                  onPressed: () => ref
+                      .read(lbDesktopNavProvider.notifier)
+                      .openPurchase(
+                        subscription.renewable ? subscription : null,
+                      ),
+                  child: Text(
+                    subscription.renewable
+                        ? LbStrings.renewPlan
+                        : LbStrings.buy,
+                  ),
+                )
+              else
+                TextButton(
+                  style: TextButton.styleFrom(foregroundColor: colors.seal),
+                  onPressed: retryExitProbe,
+                  child: const Text(LbStrings.retry),
+                ),
             ] else if (countryCode == null)
               Text(LbStrings.locating, style: labelStyle)
             else

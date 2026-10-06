@@ -158,6 +158,8 @@ abstract final class LbStrings {
   static const location = '位置';
   static const locating = '检测中…';
   static const lineDown = '线路不通，换一条试试';
+  static const lineDownExpired = '连不上：套餐已过期';
+  static const lineDownExhausted = '连不上：本周期流量已用完';
   static String sessionUsage(String used) => '本次 $used';
 
   static const connectFailed = '连接失败';

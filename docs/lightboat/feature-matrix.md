@@ -16,6 +16,7 @@
 | 一键连接 / 断开、启动失败与重试 | `logic/connection.dart` | ✅ | 🧪 | 安卓多一步 VPN 授权说明 |
 | 代理模式：智能分流 / 全局 | `logic/connection.dart` | ✅ | 🧪 | 全局跟随线路 |
 | 线路选择、测延迟、连接后自动测一次、出口地区 | `logic/connection.dart` | ✅ | 🧪 | 线路列表隐藏直连 |
+| 线路不通时说明原因：套餐过期或流量用完就直接这么说，并给「续费」 | `logic/plan.dart`（`lbPlanBlockReason`） | 🧪 | 🧪 | 2026-10-06；只改提示，不拦连接（可能刚续费、App 还没刷新） |
 | 网速、本次用量 | FlClash 的 provider | ✅ | 🧪 | |
 | 套餐卡片：到期、流量、提示 | `logic/plan.dart` | ✅ | 🧪 | |
 | 多个套餐时切换 | `session.dart` | ✅ | 🧪 | |

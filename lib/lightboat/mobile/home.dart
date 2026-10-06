@@ -468,6 +468,12 @@ class _LineCardState extends ConsumerState<_LineCard> with LbExitProbeWatcher {
     final location = ref.watch(lbExitProbeProvider);
     final countryCode = location.value?.countryCode;
     final locationFailed = location.phase == ProbePhase.failed;
+    final subscription = ref.watch(
+      lbSessionProvider.select((state) => state.subscription),
+    );
+    final blocked = locationFailed
+        ? lbPlanBlockReason(subscription, DateTime.now())
+        : null;
     final labelStyle = context.textTheme.bodyMedium?.copyWith(
       color: colors.muted,
     );
@@ -520,7 +526,7 @@ class _LineCardState extends ConsumerState<_LineCard> with LbExitProbeWatcher {
               LbStrings.location,
               locationFailed
                   ? Text(
-                      LbStrings.lineDown,
+                      blocked ?? LbStrings.lineDown,
                       style: valueStyle?.copyWith(color: colors.seal),
                     )
                   : countryCode == null
@@ -539,13 +545,30 @@ class _LineCardState extends ConsumerState<_LineCard> with LbExitProbeWatcher {
                       ),
                       style: valueStyle,
                     ),
-              trailing: locationFailed
+              trailing: !locationFailed
+                  ? null
+                  : blocked != null && subscription != null
                   ? TextButton(
+                      style: TextButton.styleFrom(foregroundColor: colors.seal),
+                      onPressed: () => unawaited(
+                        showLbPurchase(
+                          context,
+                          renewing: subscription.renewable
+                              ? subscription
+                              : null,
+                        ),
+                      ),
+                      child: Text(
+                        subscription.renewable
+                            ? LbStrings.renewPlan
+                            : LbStrings.buy,
+                      ),
+                    )
+                  : TextButton(
                       style: TextButton.styleFrom(foregroundColor: colors.seal),
                       onPressed: retryExitProbe,
                       child: const Text(LbStrings.retry),
-                    )
-                  : null,
+                    ),
             ),
         ],
       ),

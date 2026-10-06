@@ -89,6 +89,10 @@ void main() {
 
     await api.login(email: 'a@b.c', password: 'p', captchaTicket: 't');
     expect((adapter.last('/v1/auth/login').data as Map)['captcha_ticket'], 't');
+    expect(
+      adapter.requests.where((request) => request.uri.path == _heartbeat),
+      isEmpty,
+    );
   });
 
   test('sends the JWT bare, without a Bearer prefix', () async {

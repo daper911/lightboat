@@ -71,6 +71,15 @@ String? lbPlanReminder(LbSubscription subscription, DateTime now) {
   return null;
 }
 
+/// The panel stops serving a plan once it expires or runs out of traffic, so
+/// a dead line on such a plan is the plan's doing, not the node's.
+String? lbPlanBlockReason(LbSubscription? subscription, DateTime now) {
+  if (subscription == null) return null;
+  if (subscription.isExpired(now)) return LbStrings.lineDownExpired;
+  if (subscription.isTrafficExhausted) return LbStrings.lineDownExhausted;
+  return null;
+}
+
 const _remindedKey = 'lb_plan_reminded_on';
 
 Future<bool> lbClaimDailyReminder(DateTime today) async {
