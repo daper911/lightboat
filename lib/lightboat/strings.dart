@@ -79,6 +79,9 @@ abstract final class LbStrings {
   static const exportLogsDone = '日志已保存。联系客服时把这个文件发过去';
   static const exportLogsFailed = '导出日志失败，请稍后再试';
   static const uploadLogs = '上传日志';
+  static const diagnosticBrief = '诊断摘要';
+  static const eventsHeading = '—— 最近的网络请求（App 自己发出的，最新在最后）——';
+  static const noEvents = '（还没有记录）';
   static const uploadingLogs = '正在上传日志…';
   static const uploadLogsDone = '日志已上传';
   static String uploadLogsId(String id) =>

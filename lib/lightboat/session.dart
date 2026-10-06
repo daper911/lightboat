@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:collection/collection.dart';
+import 'package:dio/dio.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/enum/enum.dart';
@@ -8,6 +9,7 @@ import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
 import 'package:fl_clash/lightboat/auth/credential_store.dart';
 import 'package:fl_clash/lightboat/config.dart';
+import 'package:fl_clash/lightboat/events.dart';
 import 'package:fl_clash/lightboat/rules.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
@@ -318,20 +320,26 @@ class LbSession extends Notifier<LbSessionState> {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     final Profile profile;
     if (existing == null) {
-      profile = await Profile.normal(label: LbConfig.profileLabel, url: url)
-          .copyWith(
-            autoUpdateDuration: const Duration(hours: 6),
-            selectedMap: lbSelectedMap(const {}),
-          )
-          .update(validate: (path) => _core.validateConfig(path));
+      profile = await _recordDownload(
+        url,
+        () => Profile.normal(label: LbConfig.profileLabel, url: url)
+            .copyWith(
+              autoUpdateDuration: const Duration(hours: 6),
+              selectedMap: lbSelectedMap(const {}),
+            )
+            .update(validate: (path) => _core.validateConfig(path)),
+      );
       await _seedRuleSets(profile.id);
       profilesAction.putProfile(profile);
     } else {
       await _seedRuleSets(existing.id);
-      await profilesAction.updateProfile(
-        existing.copyWith(
-          url: url,
-          selectedMap: lbSelectedMap(existing.selectedMap),
+      await _recordDownload(
+        url,
+        () => profilesAction.updateProfile(
+          existing.copyWith(
+            url: url,
+            selectedMap: lbSelectedMap(existing.selectedMap),
+          ),
         ),
       );
       profile = _ownProfile() ?? existing;
@@ -343,6 +351,32 @@ class LbSession extends Notifier<LbSessionState> {
     if (!state.hasJwt && info != null && info.total + info.expire > 0) {
       state = state.copyWith(subscription: subscription.withUserinfo(info));
       await _persist();
+    }
+  }
+
+  /// The download (and FlClash's config check) runs outside [PanelApi], so
+  /// its outcome is logged here for the diagnostic summary.
+  Future<T> _recordDownload<T>(String url, Future<T> Function() run) async {
+    final uri = Uri.parse(url);
+    final watch = Stopwatch()..start();
+    try {
+      final result = await run();
+      lbEvents.add(
+        method: 'GET',
+        uri: uri,
+        result: 'ok',
+        elapsed: watch.elapsed,
+      );
+      return result;
+    } catch (error) {
+      lbEvents.add(
+        method: 'GET',
+        uri: uri,
+        result: error is DioException ? lbNetworkIssue(error).name : 'failed',
+        elapsed: watch.elapsed,
+        detail: error is DioException ? error.error ?? error.message : error,
+      );
+      rethrow;
     }
   }
 }

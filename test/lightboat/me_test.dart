@@ -112,6 +112,8 @@ void main() {
 
   testWidgets('seven taps on 关于 reveal the FlClash screens', (tester) async {
     await pumpMe(tester);
+    await tester.ensureVisible(find.text(LbStrings.about));
+    await tester.pumpAndSettle();
 
     for (var i = 0; i < 7; i++) {
       await tester.tap(find.text(LbStrings.about));
@@ -121,6 +123,7 @@ void main() {
       await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
     }
+    await tester.scrollUntilVisible(find.text(LbStrings.advanced), 100);
     expect(find.text(LbStrings.advanced), findsOneWidget);
   });
 
@@ -148,6 +151,7 @@ void main() {
   ) async {
     await pumpMe(tester);
 
+    await tester.scrollUntilVisible(find.text(LbStrings.logout), 200);
     await tester.ensureVisible(find.text(LbStrings.logout));
     await tester.pumpAndSettle();
     await tester.tap(find.text(LbStrings.logout));
@@ -157,6 +161,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(container.read(lbSessionProvider).phase, LbPhase.signedIn);
 
+    await tester.ensureVisible(find.text(LbStrings.logout));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(LbStrings.logout));
     await tester.pumpAndSettle();
     await tester.tap(
@@ -197,5 +203,23 @@ void main() {
     });
     await tester.pump();
     expect(find.text(LbStrings.uploadLogsDone), findsNothing);
+  });
+
+  testWidgets('shows a short summary that can be copied', (tester) async {
+    await pumpMe(tester);
+    await tester.ensureVisible(find.text(LbStrings.diagnosticBrief));
+    await tester.pumpAndSettle();
+    await tester.runAsync(() async {
+      await tester.tap(find.text(LbStrings.diagnosticBrief));
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+    });
+    await tester.pumpAndSettle();
+    expect(find.textContaining('轻舟诊断日志'), findsOneWidget);
+    expect(find.textContaining(LbStrings.eventsHeading), findsOneWidget);
+    await tester.tap(find.text(LbStrings.copy));
+    await tester.pump();
+    await tester.tap(find.text(LbStrings.close));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('轻舟诊断日志'), findsNothing);
   });
 }

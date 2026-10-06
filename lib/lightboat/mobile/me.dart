@@ -262,6 +262,10 @@ class _LbMePageState extends ConsumerState<LbMePage> {
             onTap: () => unawaited(_exportLogs()),
           ),
           _MeRow(
+            label: LbStrings.diagnosticBrief,
+            onTap: () => unawaited(lbShowDiagnosticBrief(context, ref)),
+          ),
+          _MeRow(
             label: LbStrings.uploadLogs,
             onTap: () => unawaited(lbUploadLogsWithFeedback(context, ref)),
           ),

@@ -6,6 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:fl_clash/lightboat/api/commerce.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
+import 'package:fl_clash/lightboat/events.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -89,6 +90,8 @@ void main() {
 
     await api.login(email: 'a@b.c', password: 'p', captchaTicket: 't');
     expect((adapter.last('/v1/auth/login').data as Map)['captcha_ticket'], 't');
+    expect(lbEvents.recent(1).single.request, 'POST a.example/v1/auth/login');
+    expect(lbEvents.recent(1).single.result, 'HTTP 200');
     expect(
       adapter.requests.where((request) => request.uri.path == _heartbeat),
       isEmpty,

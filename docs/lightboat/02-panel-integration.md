@@ -28,6 +28,7 @@
 | 我的订阅（含订阅 token、到期、流量） | `GET /v1/public/user/subscribe` | 是 | P0 |
 | 公告 | `GET /v1/public/announcement/list?page=1&size=20` | 是 | P1 |
 | 心跳（探测面板地址是否可用） | `GET /v1/common/heartbeat` | 否 | P0（域名容灾用） |
+| 上传诊断日志（主项目 `ea1ec42d`，2026-10-06） | `POST /diag/upload`，正文是打码后的纯文本（`text/plain`），UA 必须以 `Lightboat-` 开头 | 否 | 不在 `{code,msg,data}` 封装里：成功 HTTP 200 `{"id"}`，失败 `{"error"}`；最大 5 MB（413），每 IP 每小时 10 次（429）；文件落在 HK1 的 `/opt/mvpn/diag-logs`，主项目会话直接读 |
 | 下载订阅配置 | `GET https://sub.cnbetx.com/api/subscribe?token=…` | 否（订阅 token 本身就是凭据） | P0 |
 
 不要使用：`/v1/auth/login/device`（设备登录，面板未开启）、任何 `/v1/admin/*` 接口。

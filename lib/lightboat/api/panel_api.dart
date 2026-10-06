@@ -7,6 +7,7 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/lightboat/api/commerce.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/config.dart';
+import 'package:fl_clash/lightboat/events.dart';
 
 abstract final class LbErrorCode {
   static const rateLimited = 401;
@@ -162,8 +163,10 @@ class PanelApi {
     String? contentType,
   }) async {
     final base = await _resolvePanel();
+    final uri = Uri.parse('$base$path');
+    final watch = Stopwatch()..start();
     try {
-      return await _dio.request<Object?>(
+      final response = await _dio.request<Object?>(
         '$base$path',
         data: body,
         queryParameters: query,
@@ -173,9 +176,23 @@ class PanelApi {
           contentType: contentType,
         ),
       );
+      lbEvents.add(
+        method: method,
+        uri: uri,
+        result: 'HTTP ${response.statusCode}',
+        elapsed: watch.elapsed,
+      );
+      return response;
     } on DioException catch (error) {
       _panelUrl = null;
       final issue = lbNetworkIssue(error);
+      lbEvents.add(
+        method: method,
+        uri: uri,
+        result: issue.name,
+        elapsed: watch.elapsed,
+        detail: error.error ?? error.message,
+      );
       commonPrint.log(
         'lightboat $method $path: ${issue.name} ${error.error ?? error.message}',
         logLevel: LogLevel.warning,

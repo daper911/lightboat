@@ -127,3 +127,35 @@ Future<void> lbUploadLogsWithFeedback(
     ),
   );
 }
+
+Future<void> lbShowDiagnosticBrief(BuildContext context, WidgetRef ref) async {
+  final text = await lbDiagnosticBrief(ref);
+  if (!context.mounted) return;
+  await showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text(LbStrings.diagnosticBrief),
+      content: SingleChildScrollView(
+        child: SelectableText(
+          text,
+          style: context.textTheme.bodySmall?.copyWith(
+            color: LbColors.of(context).ink,
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            unawaited(Clipboard.setData(ClipboardData(text: text)));
+            lbToast(context, LbStrings.copied);
+          },
+          child: const Text(LbStrings.copy),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(LbStrings.close),
+        ),
+      ],
+    ),
+  );
+}

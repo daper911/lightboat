@@ -4,6 +4,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
+import 'package:fl_clash/lightboat/events.dart';
 import 'package:fl_clash/lightboat/logic/format.dart';
 import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
@@ -103,10 +104,9 @@ Future<String> _system() async {
   }
 }
 
-/// The redacted text both the export and the upload hand over.
-Future<String> lbDiagnosticText(WidgetRef ref) async {
+Future<String> _summary(WidgetRef ref) async {
   final info = globalState.packageInfo;
-  final summary = lbDiagnosticSummary(
+  return lbDiagnosticSummary(
     version: '${info.version}（${info.buildNumber}）',
     system: await _system(),
     session: ref.read(lbSessionProvider),
@@ -116,8 +116,27 @@ Future<String> lbDiagnosticText(WidgetRef ref) async {
     groups: ref.read(groupsProvider),
     now: DateTime.now(),
   );
+}
+
+String lbEventLines(List<LbEvent> events) => [
+  LbStrings.eventsHeading,
+  if (events.isEmpty) LbStrings.noEvents,
+  for (final event in events) event.format(),
+].join('\n');
+
+/// Short enough to paste into a chat: the summary and the app's own recent
+/// requests, without the Core's log.
+Future<String> lbDiagnosticBrief(WidgetRef ref) async => lbRedact(
+  '${await _summary(ref)}\n\n${lbEventLines(lbEvents.recent(20))}\n',
+);
+
+/// The redacted text both the export and the upload hand over.
+Future<String> lbDiagnosticText(WidgetRef ref) async {
   final logs = await encodeLogsTask(ref.read(logsProvider).list);
-  return lbRedact('$summary\n\n${LbStrings.logsHeading}\n$logs\n');
+  return lbRedact(
+    '${await _summary(ref)}\n\n${lbEventLines(lbEvents.recent())}\n\n'
+    '${LbStrings.logsHeading}\n$logs\n',
+  );
 }
 
 /// False when the user cancelled the save dialog.

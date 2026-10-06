@@ -1,6 +1,7 @@
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/api/panel_api.dart';
 import 'package:fl_clash/lightboat/config.dart';
+import 'package:fl_clash/lightboat/events.dart';
 import 'package:fl_clash/lightboat/logic/account.dart';
 import 'package:fl_clash/lightboat/logic/connection.dart';
 import 'package:fl_clash/lightboat/logic/format.dart';
@@ -119,5 +120,36 @@ void main() {
   test('asks for a new login only when a failed sync has no JWT', () {
     expect(LbStrings.syncFailedFor(hasJwt: true), LbStrings.syncFailed);
     expect(LbStrings.syncFailedFor(hasJwt: false), contains('重新登录'));
+  });
+
+  test('keeps the last requests without their query, oldest first', () {
+    final events = LbEvents();
+    for (var i = 0; i < LbEvents.capacity + 5; i++) {
+      events.add(
+        method: 'GET',
+        uri: Uri.parse('https://sub.example/api/subscribe?token=secret$i'),
+        result: i.isEven ? 'ok' : 'timeout',
+        elapsed: Duration(milliseconds: i),
+        detail: i.isEven ? null : 'x' * 300,
+      );
+    }
+    final recent = events.recent();
+    expect(recent, hasLength(LbEvents.capacity));
+    expect(recent.first.ms, 5);
+    expect(recent.last.ms, LbEvents.capacity + 4);
+    expect(events.recent(2).map((event) => event.ms), [
+      LbEvents.capacity + 3,
+      LbEvents.capacity + 4,
+    ]);
+    final line = recent.first.format();
+    expect(line, contains('GET sub.example/api/subscribe  timeout  5ms'));
+    expect(line, isNot(contains('secret')));
+    expect(
+      line,
+      matches(RegExp(r'^\d{4}-\d\d-\d\d \d\d:\d\d:\d\d [+-]\d\d:\d\d ')),
+    );
+    expect(line.endsWith('…'), isTrue);
+    events.clear();
+    expect(events.recent(), isEmpty);
   });
 }

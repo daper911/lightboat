@@ -28,6 +28,8 @@
 | 检查更新（`latest.json`，浏览器下载） | `update.dart` | ✅ | 🧪 | 按平台读各自的条目；安卓 0.5.0 起才真正生效（之前 versionCode 带架构编号，永远判断为不需要更新，05 §4） |
 | 应用内下载并校验 SHA256、运行期间定时检测更新 | — | ⏳ | ⏳ | 运营方 2026-10-06 决定不放进 0.5.0，以后做 |
 | 导出日志（打码） | `diagnostics.dart` | ✅ | 🧪 | Windows 的保存位置待实测 |
+| 上传日志（打码后传到面板，显示编号给客服） | `diagnostics.dart`、`PanelApi.uploadDiagnostics`、`widgets/prompts.dart` | 🧪 | 🧪 | 2026-10-06，主项目会话转达运营方的需求；面板接口 `/diag/upload`（02 §1） |
+| 诊断摘要（20–40 行，可复制粘贴到聊天）与最近 30 次网络请求记录（面板接口、拉订阅：时间带时区、方法 + 域名 + 路径、HTTP 状态或失败类型、耗时；不含 token） | `events.dart`、`diagnostics.dart` | 🧪 | 🧪 | 2026-10-06；网络请求记录也写进上传 / 导出的日志 |
 | 内置规则集（首次连接不用下载） | `rules.dart` | ✅ | 🧪 | 白名单上线后要重新打包（02 §10.4） |
 | 内置根证书 | `trust.dart` | ✅ | 🧪 | |
 | 隐藏的 FlClash 原版界面（关于连点 7 次） | `mobile/me.dart`、`desktop/me.dart` | ✅ | 🧪 | |

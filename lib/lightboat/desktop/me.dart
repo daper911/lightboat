@@ -263,6 +263,10 @@ class _LbDesktopMeState extends ConsumerState<LbDesktopMe> {
               onTap: () => unawaited(_exportLogs()),
             ),
             _Row(
+              label: LbStrings.diagnosticBrief,
+              onTap: () => unawaited(lbShowDiagnosticBrief(context, ref)),
+            ),
+            _Row(
               label: LbStrings.uploadLogs,
               onTap: () => unawaited(lbUploadLogsWithFeedback(context, ref)),
             ),
