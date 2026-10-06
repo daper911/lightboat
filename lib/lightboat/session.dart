@@ -210,7 +210,10 @@ class LbSession extends Notifier<LbSessionState> {
         await _syncProfile(subscription);
       }
     } catch (error) {
-      commonPrint.log('lightboat refresh: $error', logLevel: LogLevel.warning);
+      commonPrint.log(
+        'lightboat refresh: ${lbDescribeError(error)}',
+        logLevel: LogLevel.warning,
+      );
       state = state.copyWith(syncError: error);
     } finally {
       state = state.copyWith(syncing: false);

@@ -78,6 +78,11 @@ abstract final class LbStrings {
   static const exportLogs = '导出日志';
   static const exportLogsDone = '日志已保存。联系客服时把这个文件发过去';
   static const exportLogsFailed = '导出日志失败，请稍后再试';
+  static const uploadLogs = '上传日志';
+  static const uploadingLogs = '正在上传日志…';
+  static const uploadLogsDone = '日志已上传';
+  static String uploadLogsId(String id) =>
+      '编号：$id\n\n联系客服时把这个编号发过去，客服就能看到你的日志（已打码）。';
   static const logsHeading = '—— 日志（token、密码、订阅地址已打码）——';
   static const about = '关于';
   static const logout = '退出登录';

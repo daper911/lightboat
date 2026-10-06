@@ -53,6 +53,16 @@ LbNetworkIssue lbNetworkIssue(DioException error) {
   }
 }
 
+/// One line for the log: a network failure names its kind and host, so an
+/// exported log tells a timeout from a lookup or certificate failure.
+String lbDescribeError(Object error) {
+  if (error is DioException) {
+    final host = error.requestOptions.uri.host;
+    return '${lbNetworkIssue(error).name} ($host): ${error.error ?? error.message}';
+  }
+  return '$error';
+}
+
 class PanelException implements Exception {
   final int code;
   final String message;
@@ -143,21 +153,25 @@ class PanelApi {
     return _panelUrls.first;
   }
 
-  Future<Object?> _call(
+  Future<Response<Object?>> _request(
     String method,
     String path, {
-    Map<String, Object?>? body,
+    Object? body,
     Map<String, Object?>? query,
     String? token,
+    String? contentType,
   }) async {
     final base = await _resolvePanel();
-    final Response<Object?> response;
     try {
-      response = await _dio.request<Object?>(
+      return await _dio.request<Object?>(
         '$base$path',
         data: body,
         queryParameters: query,
-        options: Options(method: method, headers: {'Authorization': ?token}),
+        options: Options(
+          method: method,
+          headers: {'Authorization': ?token},
+          contentType: contentType,
+        ),
       );
     } on DioException catch (error) {
       _panelUrl = null;
@@ -172,7 +186,48 @@ class PanelApi {
         issue: issue,
       );
     }
+  }
+
+  Future<Object?> _call(
+    String method,
+    String path, {
+    Map<String, Object?>? body,
+    Map<String, Object?>? query,
+    String? token,
+  }) async {
+    final response = await _request(
+      method,
+      path,
+      body: body,
+      query: query,
+      token: token,
+    );
     return parseEnvelope(response.statusCode, response.data);
+  }
+
+  /// Hands an already redacted log to the panel's `/diag/upload` (outside the
+  /// API envelope: `{"id"}` on success, `{"error"}` otherwise) and returns the
+  /// id support quotes.
+  Future<String> uploadDiagnostics(String text) async {
+    final response = await _request(
+      'POST',
+      '/diag/upload',
+      body: text,
+      contentType: 'text/plain; charset=utf-8',
+    );
+    final data = response.data;
+    final id = data is Map ? data['id'] : null;
+    if (response.statusCode == 200 && id is String && id.isNotEmpty) {
+      return id;
+    }
+    if (response.statusCode == 429) {
+      throw const PanelException(LbErrorCode.rateLimited, 'Too Many Requests');
+    }
+    final error = data is Map ? data['error'] : null;
+    throw PanelException(
+      response.statusCode ?? 0,
+      error is String ? error : 'HTTP ${response.statusCode}',
+    );
   }
 
   static Object? parseEnvelope(int? statusCode, Object? data) {

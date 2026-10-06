@@ -1,4 +1,9 @@
+import 'dart:async';
+
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/lightboat/diagnostics.dart';
+import 'package:fl_clash/lightboat/theme.dart';
+import 'package:flutter/services.dart';
 import 'package:fl_clash/lightboat/api/models.dart';
 import 'package:fl_clash/lightboat/logic/account.dart';
 import 'package:fl_clash/lightboat/logic/plan.dart';
@@ -83,4 +88,42 @@ Future<void> lbShowPopupAnnouncement(
   } catch (error) {
     commonPrint.log('lightboat announcements: $error');
   }
+}
+
+/// Uploads the redacted log and shows the id support asks for.
+Future<void> lbUploadLogsWithFeedback(
+  BuildContext context,
+  WidgetRef ref,
+) async {
+  lbToast(context, LbStrings.uploadingLogs);
+  final String id;
+  try {
+    id = await lbUploadLogs(ref);
+  } catch (error) {
+    commonPrint.log('lightboat upload logs: $error');
+    if (context.mounted) {
+      lbToast(context, LbStrings.panelError(error, action: '上传'), error: true);
+    }
+    return;
+  }
+  if (!context.mounted) return;
+  ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
+  await showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text(LbStrings.uploadLogsDone),
+      content: SelectableText(LbStrings.uploadLogsId(id)),
+      actions: [
+        TextButton(
+          onPressed: () =>
+              unawaited(Clipboard.setData(ClipboardData(text: id))),
+          child: const Text(LbStrings.copy),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text(LbStrings.gotIt),
+        ),
+      ],
+    ),
+  );
 }

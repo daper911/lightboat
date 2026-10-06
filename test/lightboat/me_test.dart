@@ -1,4 +1,5 @@
 import 'package:fl_clash/lightboat/api/models.dart';
+import 'package:fl_clash/lightboat/api/panel_api.dart';
 import 'package:fl_clash/lightboat/auth/credential_store.dart';
 import 'package:fl_clash/lightboat/mobile/apps.dart';
 import 'package:fl_clash/lightboat/mobile/login.dart';
@@ -31,6 +32,7 @@ LbSubscription _plan(int id, String name) => LbSubscription(
 void main() {
   late MemoryStore store;
   late ProviderContainer container;
+  late FakePanelApi api;
 
   setUp(setTestPackageInfo);
 
@@ -50,7 +52,7 @@ void main() {
     final systemAction = FakeSystemAction();
     container = ProviderContainer(
       overrides: [
-        lbPanelApiProvider.overrideWithValue(FakePanelApi()),
+        lbPanelApiProvider.overrideWithValue(api = FakePanelApi()),
         lbCredentialStoreProvider.overrideWithValue(store),
         profilesProvider.overrideWith(TestProfiles.new),
         systemActionProvider.overrideWith(() => systemAction),
@@ -146,6 +148,8 @@ void main() {
   ) async {
     await pumpMe(tester);
 
+    await tester.ensureVisible(find.text(LbStrings.logout));
+    await tester.pumpAndSettle();
     await tester.tap(find.text(LbStrings.logout));
     await tester.pumpAndSettle();
     expect(find.text(LbStrings.logoutConfirm), findsOneWidget);
@@ -164,5 +168,34 @@ void main() {
     await tester.pumpAndSettle();
     expect(container.read(lbSessionProvider).phase, LbPhase.signedOut);
     expect(store.saved.jwt, isNull);
+  });
+
+  testWidgets('uploads the log and shows the id to quote', (tester) async {
+    await pumpMe(tester);
+    await tester.scrollUntilVisible(find.text(LbStrings.uploadLogs), 200);
+    await tester.runAsync(() async {
+      await tester.tap(find.text(LbStrings.uploadLogs));
+      for (var i = 0; i < 20 && api.uploads.isEmpty; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    });
+    await tester.pumpAndSettle();
+    expect(api.uploads.single, contains('轻舟诊断日志'));
+    expect(
+      find.textContaining('20261006-142823-1.2.3.4-81e4d0'),
+      findsOneWidget,
+    );
+    await tester.tap(find.text(LbStrings.gotIt));
+    await tester.pumpAndSettle();
+
+    api.uploadError = LbErrorCode.rateLimited;
+    await tester.runAsync(() async {
+      await tester.tap(find.text(LbStrings.uploadLogs));
+      for (var i = 0; i < 20 && api.uploads.length < 2; i++) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+    });
+    await tester.pump();
+    expect(find.text(LbStrings.uploadLogsDone), findsNothing);
   });
 }

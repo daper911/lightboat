@@ -14,6 +14,7 @@ import 'package:fl_clash/lightboat/session.dart';
 import 'package:fl_clash/lightboat/strings.dart';
 import 'package:fl_clash/lightboat/theme.dart';
 import 'package:fl_clash/lightboat/update.dart';
+import 'package:fl_clash/lightboat/widgets/prompts.dart';
 import 'package:fl_clash/pages/pages.dart';
 import 'package:fl_clash/state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -259,6 +260,10 @@ class _LbMePageState extends ConsumerState<LbMePage> {
           _MeRow(
             label: LbStrings.exportLogs,
             onTap: () => unawaited(_exportLogs()),
+          ),
+          _MeRow(
+            label: LbStrings.uploadLogs,
+            onTap: () => unawaited(lbUploadLogsWithFeedback(context, ref)),
           ),
           const _MeSection(LbStrings.sectionAbout),
           _MeRow(

@@ -103,8 +103,8 @@ Future<String> _system() async {
   }
 }
 
-/// False when the user cancelled the save dialog.
-Future<bool> lbExportLogs(WidgetRef ref) async {
+/// The redacted text both the export and the upload hand over.
+Future<String> lbDiagnosticText(WidgetRef ref) async {
   final info = globalState.packageInfo;
   final summary = lbDiagnosticSummary(
     version: '${info.version}（${info.buildNumber}）',
@@ -117,7 +117,12 @@ Future<bool> lbExportLogs(WidgetRef ref) async {
     now: DateTime.now(),
   );
   final logs = await encodeLogsTask(ref.read(logsProvider).list);
-  final text = lbRedact('$summary\n\n${LbStrings.logsHeading}\n$logs\n');
+  return lbRedact('$summary\n\n${LbStrings.logsHeading}\n$logs\n');
+}
+
+/// False when the user cancelled the save dialog.
+Future<bool> lbExportLogs(WidgetRef ref) async {
+  final text = await lbDiagnosticText(ref);
   final path = await appPath.tempFilePath;
   await File(path).safeWriteAsString(text);
   final stamp = DateTime.now()
@@ -127,3 +132,7 @@ Future<bool> lbExportLogs(WidgetRef ref) async {
   return await picker.saveFileWithPath('lightboat-log-$stamp.txt', path) !=
       null;
 }
+
+/// The upload's id, for the user to quote to support.
+Future<String> lbUploadLogs(WidgetRef ref) async =>
+    ref.read(lbPanelApiProvider).uploadDiagnostics(await lbDiagnosticText(ref));

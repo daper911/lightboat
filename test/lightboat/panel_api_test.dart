@@ -341,4 +341,44 @@ void main() {
     expect(await api.subscriptions('jwt'), isEmpty);
     expect(pickSubscription(const []), isNull);
   });
+
+  test('uploads a redacted log and returns its id', () async {
+    build({
+      '/diag/upload': (200, {'id': '20261006-142823-1.2.3.4-81e4d0'}),
+    });
+    expect(
+      await api.uploadDiagnostics('log text'),
+      '20261006-142823-1.2.3.4-81e4d0',
+    );
+    final request = adapter.last('/diag/upload');
+    expect(request.method, 'POST');
+    expect(request.data, 'log text');
+    expect(request.contentType, startsWith('text/plain'));
+    expect(request.headers['User-Agent'], 'Lightboat-Android/9 (Clash.Meta)');
+  });
+
+  test('reports a refused upload by its reason', () async {
+    build({
+      '/diag/upload': (429, {'error': 'rate limited'}),
+    });
+    await expectLater(
+      api.uploadDiagnostics('x'),
+      throwsA(
+        isA<PanelException>().having(
+          (e) => e.code,
+          'code',
+          LbErrorCode.rateLimited,
+        ),
+      ),
+    );
+    build({
+      '/diag/upload': (413, {'error': 'too large'}),
+    });
+    await expectLater(
+      api.uploadDiagnostics('x'),
+      throwsA(
+        isA<PanelException>().having((e) => e.message, 'message', 'too large'),
+      ),
+    );
+  });
 }

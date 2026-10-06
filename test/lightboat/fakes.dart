@@ -50,6 +50,17 @@ class FakePanelApi extends PanelApi {
     return subscriptionList;
   }
 
+  final List<String> uploads = [];
+  int? uploadError;
+
+  @override
+  Future<String> uploadDiagnostics(String text) async {
+    uploads.add(text);
+    final error = uploadError;
+    if (error != null) throw PanelException(error, '');
+    return '20261006-142823-1.2.3.4-81e4d0';
+  }
+
   @override
   Future<LbSiteConfig> siteConfig() async => const LbSiteConfig();
 
